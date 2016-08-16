@@ -29,50 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_INPUT_H
-#define TG_INPUT_H
+#ifndef TG_TYPES_H
+#define TG_TYPES_H
 
-#include <map>
+#include <cstdint>
+#include <utility>
 #include <vector>
-#include <string>
 
-#include "tg_types.h"
+using coordinate_t = std::uint32_t;
+using ball_id_t = coordinate_t;
+using coordinates_t = std::pair <coordinate_t, coordinate_t>;
+using wall_coordinates_t = std::pair <coordinates_t, coordinates_t>;
 
-class InputData
-{
-public:
-    InputData (const input_t &input);
-    ~InputData() = default;
+using ball_id_t = coordinate_t;
 
-    bool IsValid () const;
-    std::string & GetErrorString();
+using input_t = std::vector<coordinate_t>;
 
-    std::map<ball_id_t, coordinates_t> GetBalls() const;
-
-    std::map<ball_id_t, coordinates_t> GetHoles() const;
-
-    coordinate_t GetTableSize() const;
-
-    ball_id_t GetBallCount() const;
-    coordinate_t GetWallCount() const;
-
-
-    std::vector<wall_coordinates_t> GetWalls() const;
-
-private:
-    std::map <ball_id_t, coordinates_t> balls_;
-    std::map <ball_id_t, coordinates_t> holes_;
-    coordinate_t table_size_;
-    ball_id_t ball_count_;
-    std::vector <wall_coordinates_t> walls_;
-    coordinate_t walls_count_;
-
-    std::string error_;
-    void AppendError (const std::string & string);
-
-    bool valid_;
-    bool Validate ();
-
-};
-
-#endif // TG_INPUT_H
+#endif // TG_TYPES_H

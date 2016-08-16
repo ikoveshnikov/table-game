@@ -20,5 +20,4 @@ function(add_boost_test SOURCE_FILE_NAME DEPENDENCY_LIB)
     endforeach()
 endfunction()
 
-include_directories(${CMAKE_SOURCE_DIR}/lib)
 add_boost_test(input.cpp tg-core)
