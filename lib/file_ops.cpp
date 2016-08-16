@@ -29,75 +29,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstddef>
-#include <string>
-#include <iostream>
-#include <getopt.h>
-
-#include "tg_types.h"
 #include "file_ops.h"
-#include "input.h"
 
-void Usage (const char * program_name)
+
+FileInput::FileInput(std::string filename)
 {
-    std::cout << "\n"
-           "Usage: " << program_name << " OPTIONS\n"
-           "\n"
-           "OPTIONS:\n"
-           "  -f, --file        File name containing input data\n"
-           "  -h, --help              Display this help and exit.\n"
-              << std::endl;
+    input_file_.open(filename);
+
+    while (input_file_.good())
+    {
+        coordinate_t c;
+        input_file_ >> c;
+    }
 }
 
-int main(int argc, char *argv[])
+FileInput::~FileInput()
 {
-    optind = 1;
-    static struct option longopts[] =
-    {
-        {"file",    required_argument, NULL, 'f'},
-        {"help",       no_argument,       NULL, 'h'},
-        {NULL, 0, NULL, 0}
-    };
+    input_file_.close();
+}
 
-    bool parse_error = false;
 
-    std::string filename;
-
-    while (1)
-    {
-        int long_index = 0;
-        int opt = getopt_long(argc, argv, "f:h:", longopts, &long_index);
-
-        if (opt == -1)
-            break;	/* No more options */
-
-        switch (opt) {
-        case 'f':
-            filename = optarg;
-            break;
-
-        case 'h':
-        default:
-            parse_error = true;
-            break;
-        }
-    }
-
-    if (parse_error)
-    {
-        Usage(argv[0]);
-    }
-
-    optind = 1;		/* reset 'extern optind' from the getopt lib */
-
-    FileInput fi (filename);
-    InputData data (fi.GetData());
-
-    if (!data.IsValid())
-    {
-        std::cout << data.GetErrorString();
-        return 1;
-    }
-
-    return 0;
+const input_t & FileInput::GetData() const
+{
+    return data_;
 }
