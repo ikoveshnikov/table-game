@@ -1,0 +1,16 @@
+# This file is used to ignore files which are generated
+# ----------------------------------------------------------------------------
+
+*~
+*.autosave
+*.a
+*.core
+*.o
+*.orig
+*.rej
+*.so
+*.so.*
+# Vim temporary files
+.*.swp
+# qtcreator generated files
+CMakeLists.txt.user
