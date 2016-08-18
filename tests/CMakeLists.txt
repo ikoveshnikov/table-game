@@ -26,3 +26,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.h.in
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_boost_test(input.cpp tg-core)
+add_boost_test(file_ops.cpp tg-core)
