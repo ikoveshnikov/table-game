@@ -7,6 +7,7 @@ endif()
 cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_CXX_STANDARD 11)
+add_definitions(-Wall -Wextra)
 
 add_subdirectory(lib)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
