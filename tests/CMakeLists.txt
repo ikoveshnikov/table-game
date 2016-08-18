@@ -20,4 +20,9 @@ function(add_boost_test SOURCE_FILE_NAME DEPENDENCY_LIB)
     endforeach()
 endfunction()
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests_config.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/tests_config.h @ONLY)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 add_boost_test(input.cpp tg-core)
