@@ -38,8 +38,14 @@
 #include "file_ops.h"
 #include "input.h"
 
-void Usage (const char * program_name)
+void Usage (std::string program_name)
 {
+    size_t pos = program_name.find_last_of('/');
+    if ((pos != std::string::npos) && (pos < program_name.length()))
+    {
+        program_name = program_name.substr(pos+1);
+    }
+
     std::cout << "\n"
            "Usage: " << program_name << " OPTIONS\n"
            "\n"
@@ -83,9 +89,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (parse_error)
+    if (parse_error || filename.empty())
     {
         Usage(argv[0]);
+        return 1;
     }
 
     optind = 1;		/* reset 'extern optind' from the getopt lib */
