@@ -34,12 +34,12 @@
 
 FileInput::FileInput(std::string filename)
 {
-    input_file_.open(filename);
+    input_file_.open(filename, std::ios_base::in);
 
-    while (input_file_.good())
+    coordinate_t c;
+    while (input_file_ >> c)
     {
-        coordinate_t c;
-        input_file_ >> c;
+        data_.push_back(c);
     }
 }
 
@@ -47,7 +47,6 @@ FileInput::~FileInput()
 {
     input_file_.close();
 }
-
 
 const input_t & FileInput::GetData() const
 {
