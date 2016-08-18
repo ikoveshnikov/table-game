@@ -38,17 +38,28 @@
 
 #include "tg_types.h"
 
+//!
+//! \brief The FileInput class Controls reading data from files
+//!
 class FileInput
 {
 public:
+    //!
+    //! \brief FileInput Reading file during initialisation
+    //! \param filename File to be red
+    //!
     FileInput (std::string filename);
     ~FileInput ();
 
+    //!
+    //! \brief GetData Returns array of coordinates red from file
+    //! \return Coordinates set
+    //!
     const input_data_t & GetData() const;
 
 private:
-    input_data_t data_;
-    std::ifstream input_file_;
+    input_data_t data_; //!< Holds coordinates set readed from file
+    std::ifstream input_file_; //!< Stream of input file
 };
 
 #endif // TG_FILES_H

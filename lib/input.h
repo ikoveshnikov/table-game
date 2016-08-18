@@ -39,33 +39,87 @@
 
 #include "tg_types.h"
 
+//!
+//! \brief The InputData class reads input vector of coordinates
+//! and makes base checks of boundaries and data consistence
+//!
 class InputData
 {
 public:
+    //!
+    //! \brief InputData creates input data object and makes data validation
+    //! \param input vector of coordinates
+    //!
     InputData (const input_data_t &input);
     ~InputData() = default;
 
+    //!
+    //! \brief The Status enum Describes status of parsing input data
+    //!
     enum class Status
     {
-        Ok,
-        IncompliteData,
-        TooLongData,
-        InvalidCoordinates,
-        Duplicates,
-        BallsInHoles,
-        NoBalls
+        Ok,                 //!< No errors in input data
+        IncompliteData,     //!< Coordinates pattern is too short
+        TooLongData,        //!< Coordinates pattern is too long
+        InvalidCoordinates, //!< Some of coordinates in input data are invalid
+        Duplicates,         //!< Some of objecta are duplicated
+        BallsInHoles,       //!< Some balls are already in holes
+        NoBalls             //!< No balls on the board. Nothing to play with
     };
 
+    //!
+    //! \brief GetDataStatus Returns parsing status of input data
+    //! \return parsing status description. See %Status for more information
+    //!
     Status GetDataStatus () const;
+
+    //!
+    //! \brief GetErrorString Human-readable representation of parsing status
+    //! \return string with error description
+    //!
     const std::string GetErrorString() const;
 
+    //!
+    //! \brief GetTableSize Describes size of the table
+    //! \return size of the game table
+    //!
     coordinate_t GetTableSize() const;
 
+    //!
+    //! \brief GetBallCount Returns amount of balls and holes on the table.
+    //! Count of balls and holes in the same cannot be bigger than number
+    //! of cells on the board, otherways at least one object will be duplicated.
+    //! If happened %status_ will be set to corresponding value
+    //! \return value from 1 to %table_size_ ^ 2 / 2
+    //!
     ball_id_t GetBallCount() const;
+
+    //!
+    //! \brief GetWallCount Returns amount of walls on game table.
+    //! Same as %GetBallCount(): if overflow maximum possible cout puplicate
+    //! error will be shown
+    //! \return  value from 1 to ( %table_size_ -1 ) ^ 2 * 2
+    //!
     coordinate_t GetWallCount() const;
 
+    //!
+    //! \brief GetBalls returns all available balls on the game table
+    //! \return Array of board coordinates where balls ere installed.
+    //! Vectoe index describes ball's id
+    //!
     std::vector<coordinates_t> GetBalls() const;
+
+    //!
+    //! \brief GetHoles Same as %GetBalls
+    //! \return Array of board coordinates where holes ere installed.
+    //! Vectoe index describes halls's id
+    //!
     std::vector<coordinates_t> GetHoles() const;
+
+    //!
+    //! \brief GetWalls Same as %GetBalls
+    //! \return rray of board coordinates where bordedrs ere installed.
+    //!
     std::vector<wall_coordinates_t> GetWalls() const;
 
 private:
