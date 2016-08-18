@@ -35,14 +35,35 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
+#include <ostream>
 
 using coordinate_t = std::uint32_t;
-using ball_id_t = coordinate_t;
-using coordinates_t = std::pair <coordinate_t, coordinate_t>;
-using wall_coordinates_t = std::pair <coordinates_t, coordinates_t>;
+
+struct coordinates_t
+{
+    coordinate_t x;
+    coordinate_t y;
+
+    coordinates_t(coordinate_t kx, coordinate_t ky)
+        : x(kx), y(ky) {}
+    coordinates_t()
+        : x(0), y(0) {}
+};
+
+struct wall_coordinates_t
+{
+    coordinates_t first;
+    coordinates_t second;
+
+    wall_coordinates_t(coordinates_t cell1, coordinates_t cell2)
+        : first(cell1), second(cell2) {}
+    wall_coordinates_t(coordinate_t x1, coordinate_t y1,
+                       coordinate_t x2, coordinate_t y2)
+        : first(x1,y1), second(x2,y2) {}
+};
 
 using ball_id_t = coordinate_t;
 
-using input_t = std::vector<coordinate_t>;
+using input_data_t = std::vector<coordinate_t>;
 
 #endif // TG_TYPES_H

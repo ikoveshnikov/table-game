@@ -48,7 +48,7 @@ FileInput::~FileInput()
     input_file_.close();
 }
 
-const input_t & FileInput::GetData() const
+const input_data_t & FileInput::GetData() const
 {
     return data_;
 }

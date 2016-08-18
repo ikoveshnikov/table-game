@@ -35,44 +35,53 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <ostream>
 
 #include "tg_types.h"
 
 class InputData
 {
 public:
-    InputData (const input_t &input);
+    InputData (const input_data_t &input);
     ~InputData() = default;
 
-    bool IsValid () const;
-    std::string & GetErrorString();
+    enum class Status
+    {
+        Ok,
+        IncompliteData,
+        TooLongData,
+        InvalidCoordinates,
+        Duplicates,
+        BallsInHoles,
+        NoBalls
+    };
 
-    std::map<ball_id_t, coordinates_t> GetBalls() const;
-
-    std::map<ball_id_t, coordinates_t> GetHoles() const;
+    Status GetDataStatus () const;
+    const std::string GetErrorString() const;
 
     coordinate_t GetTableSize() const;
 
     ball_id_t GetBallCount() const;
     coordinate_t GetWallCount() const;
 
-
+    std::vector<coordinates_t> GetBalls() const;
+    std::vector<coordinates_t> GetHoles() const;
     std::vector<wall_coordinates_t> GetWalls() const;
 
 private:
-    std::map <ball_id_t, coordinates_t> balls_;
-    std::map <ball_id_t, coordinates_t> holes_;
     coordinate_t table_size_;
     ball_id_t ball_count_;
-    std::vector <wall_coordinates_t> walls_;
     coordinate_t walls_count_;
+    std::vector <coordinates_t> balls_;
+    std::vector <coordinates_t> holes_;
+    std::vector <wall_coordinates_t> walls_;
 
-    std::string error_;
-    void AppendError (const std::string & string);
+    Status status_;
 
-    bool valid_;
-    bool Validate ();
-
+    void Validate();
 };
+
+std::ostream &
+operator<<(std::ostream & os, const InputData::Status & s);
 
 #endif // TG_INPUT_H

@@ -44,10 +44,10 @@ public:
     FileInput (std::string filename);
     ~FileInput ();
 
-    const input_t & GetData() const;
+    const input_data_t & GetData() const;
 
 private:
-    input_t data_;
+    input_data_t data_;
     std::ifstream input_file_;
 };
 

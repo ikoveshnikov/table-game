@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     FileInput fi (filename);
     InputData data (fi.GetData());
 
-    if (!data.IsValid())
+    if (InputData::Status::Ok != data.GetDataStatus())
     {
         std::cout << data.GetErrorString();
         return 1;

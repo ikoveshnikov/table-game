@@ -30,15 +30,15 @@
  */
 
 #include "input.h"
+#include "tg_utils.h"
 
-InputData::InputData(const input_t &input)
-    : valid_(false)
+InputData::InputData(const input_data_t &input)
+    : status_(Status::Ok)
 {
     size_t minimum_size = 3;
     if (input.size() < minimum_size)
     {
-        AppendError("Too small data set: at least table size and ball count"
-                    "must be provided!");
+        status_ = Status::IncompliteData;
         return;
     }
 
@@ -46,11 +46,28 @@ InputData::InputData(const input_t &input)
     ball_count_  = input.at(1);
     walls_count_ = input.at(2);
 
-    if (input.size() < minimum_size + ball_count_ * 4)
+    // 4 coordinates for every  ball: ball's coordinate, hole's coordinates
+    // 4 coordinates for every wall
+    size_t expected_data_size =  minimum_size + ball_count_ * 4 + walls_count_ * 4;
+    if (input.size() < expected_data_size)
     {
-        AppendError("Too small data set: not enough balls and holes description!");
+        status_ = Status::IncompliteData;
         return;
     }
+    else if (input.size() > expected_data_size)
+    {
+        status_ = Status::TooLongData;
+        return;
+    }
+    else if (ball_count_ == 0)
+    {
+        status_ = Status::NoBalls;
+        return;
+    }
+
+    balls_.reserve(ball_count_);
+    holes_.reserve(ball_count_);
+    walls_.reserve(walls_count_);
 
     for (ball_id_t i=0; i<ball_count_; ++i)
     {
@@ -58,7 +75,12 @@ InputData::InputData(const input_t &input)
         coordinate_t x (input.at(current_position));
         coordinate_t y (input.at(current_position +1));
         coordinates_t coords (x, y);
-        balls_[i] = coords;
+        if (! IsValid(coords, table_size_))
+        {
+            status_ = Status::InvalidCoordinates;
+            return;
+        }
+        balls_.push_back(coords);
     }
 
     for (ball_id_t i=0; i<ball_count_; ++i)
@@ -67,7 +89,12 @@ InputData::InputData(const input_t &input)
         coordinate_t x (input.at(current_position));
         coordinate_t y (input.at(current_position +1));
         coordinates_t coords (x, y);
-        holes_[i] = coords;
+        if (! IsValid(coords, table_size_))
+        {
+            status_ = Status::InvalidCoordinates;
+            return;
+        }
+        holes_.push_back(coords);
     }
 
     size_t start_of_walls = minimum_size + ball_count_ * 4;
@@ -75,7 +102,7 @@ InputData::InputData(const input_t &input)
     if (((input.size() - start_of_walls) % 4 != 0) ||
         walls_count_ != (input.size() - start_of_walls) / 4)
     {
-        AppendError("Too small data set: walls are broken!");
+        status_ = Status::IncompliteData;
         return;
     }
 
@@ -86,30 +113,52 @@ InputData::InputData(const input_t &input)
         coordinate_t y1 (input.at(current_position +1));
         coordinate_t x2 (input.at(current_position +2));
         coordinate_t y2 (input.at(current_position +3));
-        coordinates_t coords1 (x1, y1);
-        coordinates_t coords2 (x2, y2);
-        walls_.push_back(std::make_pair(coords1, coords2));
+        wall_coordinates_t wall (x1, y1, x2, y2);
+        if (! IsValid(wall, table_size_))
+        {
+            status_ = Status::InvalidCoordinates;
+            return;
+        }
+        walls_.push_back(wall);
     }
 
-    valid_ = Validate();
+    Validate();
 }
 
-bool InputData::IsValid() const
+InputData::Status InputData::GetDataStatus() const
 {
-    return valid_;
+    return status_;
 }
 
-std::string &InputData::GetErrorString()
+const std::string InputData::GetErrorString() const
 {
-    return error_;
+    switch (status_)
+    {
+    case Status::Ok:
+        return "Input data is OK";
+    case Status::IncompliteData:
+        return "Input data is too short. Check if all the coordinates present.";
+    case Status::TooLongData:
+        return "Input data is too long. Check if there is no extra coordinates.";
+    case Status::BallsInHoles:
+        return "Some balls are already in the holes.";
+    case Status::NoBalls:
+        return "There is no balls in input data set";
+    case Status::Duplicates:
+        return "Some objects has duplicates!";
+    case Status::InvalidCoordinates:
+        return  "Some coordinates are less than 1 or bigger than table size.";
+    }
+
+    return "";
 }
 
-std::map<ball_id_t, coordinates_t> InputData::GetBalls() const
+std::vector<coordinates_t> InputData::GetBalls() const
 {
     return balls_;
 }
 
-std::map<ball_id_t, coordinates_t> InputData::GetHoles() const
+std::vector<coordinates_t> InputData::GetHoles() const
 {
     return holes_;
 }
@@ -134,57 +183,66 @@ std::vector<wall_coordinates_t> InputData::GetWalls() const
     return walls_;
 }
 
-void InputData::AppendError(const std::string &string)
+void InputData::Validate()
 {
-    error_.append(string);
-    error_.append("\n");
-}
+    if (FindDuplicates(balls_))
+    {
+        status_ = Status::Duplicates;
+        return;
+    }
+    if (FindDuplicates(holes_))
+    {
+        status_ = Status::Duplicates;
+        return;
+    }
 
-bool InputData::Validate()
-{
-    valid_ = true;
-    // balls, holes and walls coordinates must belong to [1, table_size_]
+    if (FindDuplicates(walls_))
+    {
+        status_ = Status::Duplicates;
+        return;
+    }
+
+    // Board state still can be invalid, if one of the balls will
+    // stay up on the hole
     for (auto i : balls_)
     {
-        const coordinates_t & c = i.second;
-        if ((c.first  < 1) || (c.first  > table_size_) ||
-            (c.second < 1) || (c.second > table_size_) )
+        for (auto j : holes_)
         {
-            valid_ = false;
-            AppendError("Ball #" + std::to_string(i.first) + " has invalid coordinates");
+            if (i == j)
+            {
+                status_ = Status::BallsInHoles;
+                return;
+            }
         }
     }
+}
 
-    for (auto i : holes_)
+std::ostream &
+operator<<(std::ostream & os, const InputData::Status & s)
+{
+    switch (s)
     {
-        const coordinates_t & c = i.second;
-        if ((c.first  < 1) || (c.first  > table_size_) ||
-            (c.second < 1) || (c.second > table_size_) )
-        {
-            valid_ = false;
-            AppendError("Hole #" + std::to_string(i.first) + " has invalid coordinates");
-        }
+    case InputData::Status::Ok:
+        os << "Status: Ok";
+        break;
+    case InputData::Status::IncompliteData:
+        os << "Status: IncompliteData";
+        break;
+    case InputData::Status::TooLongData:
+        os << "Status: TooLongData";
+        break;
+    case InputData::Status::InvalidCoordinates:
+        os << "Status: InvalidCoordinates";
+        break;
+    case InputData::Status::Duplicates:
+        os << "Status: Duplicates";
+        break;
+    case InputData::Status::BallsInHoles:
+        os << "Status: BallsInHoles";
+        break;
+    case InputData::Status::NoBalls:
+        os << "Status: NoBalls";
+        break;
     }
-
-    size_t j = 0;
-    for (auto i : walls_)
-    {
-        const coordinates_t & c1 = i.first;
-        const coordinates_t & c2 = i.second;
-
-        if ((c1.first  < 1) || (c1.first  > table_size_) ||
-            (c1.second < 1) || (c1.second > table_size_) ||
-            (c2.first  < 1) || (c2.first  > table_size_) ||
-            (c2.second < 1) || (c2.second > table_size_) )
-        {
-            valid_ = false;
-            AppendError("Wall #" + std::to_string(j) + " has invalid coordinates");
-        }
-        ++j;
-    }
-
-    // TODO: board still can be invalid, if one of the balls will
-    // stay up on inapropriate hole
-
-    return valid_;
+    return os;
 }
