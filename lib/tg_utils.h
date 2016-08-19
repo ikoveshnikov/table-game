@@ -54,6 +54,14 @@ operator< (const coordinates_t & l, const coordinates_t & r)
     return (std::memcmp(&l, &r, sizeof(coordinates_t)) < 0);
 }
 
+//!
+//! \brief operator == Compare two wall coordinates.
+//! Since each wall coordinate is represented by two neighbours cells
+//! need to cross compare all cells
+//! \param l coordinates of first wall
+//! \param r coorinates of second wall
+//! \return true if equal
+//!
 inline bool
 operator== (const wall_coordinates_t & l, const wall_coordinates_t & r)
 {
@@ -63,6 +71,13 @@ operator== (const wall_coordinates_t & l, const wall_coordinates_t & r)
             ((l.first == r.second) && (l.second == r.first));
 }
 
+//!
+//! \brief operator != same as operator compare
+//! \see %operator==
+//! \param l coordinates of first wall
+//! \param r coorinates of second wall
+//! \return true if NOT equal
+//!
 inline bool
 operator!= (const wall_coordinates_t & l, const wall_coordinates_t & r)
 {
@@ -86,11 +101,24 @@ operator<<(std::ostream & os, const wall_coordinates_t & c)
     return os;
 }
 
+//!
+//! \brief IsValid Check if coordinate valid: more or equal 1 and less or equal
+//! game board size
+//! \param c coordinate
+//! \param table_size game board size
+//! \return true if valid
+//!
 inline bool IsValid(const coordinate_t c, const coordinate_t table_size)
 {
     return ((c >= 1) && (c <= table_size));
 }
 
+//!
+//! \brief IsValid Check if coordinate valid: must lay on game board
+//! \param c cells coordinate
+//! \param table_size size of game board
+//! \return true if valid
+//!
 inline bool IsValid(const coordinates_t &c, const coordinate_t table_size)
 {
     return ( IsValid(c.x, table_size) &&
@@ -103,6 +131,9 @@ inline bool IsValid(const wall_coordinates_t &c, const coordinate_t table_size)
              IsValid(c.second, table_size) );
 }
 
+//!
+//! /brief Find duplicated items in vector
+//!
 template < typename T >
 inline bool HasDuplicates (const std::vector<T> & v)
 {

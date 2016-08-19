@@ -81,7 +81,7 @@ public:
 
     //!
     //! \brief GetTableSize Describes size of the table
-    //! \return size of the game table
+    //! \return size of the game board
     //!
     coordinate_t GetTableSize() const;
 
@@ -95,7 +95,7 @@ public:
     ball_id_t GetBallCount() const;
 
     //!
-    //! \brief GetWallCount Returns amount of walls on game table.
+    //! \brief GetWallCount Returns amount of walls on game board
     //! Same as %GetBallCount(): if overflow maximum possible cout puplicate
     //! error will be shown
     //! \return  value from 1 to ( %table_size_ -1 ) ^ 2 * 2
@@ -103,7 +103,7 @@ public:
     coordinate_t GetWallCount() const;
 
     //!
-    //! \brief GetBalls returns all available balls on the game table
+    //! \brief GetBalls returns all available balls on the game board
     //! \return Array of board coordinates where balls ere installed.
     //! Vectoe index describes ball's id
     //!
@@ -123,13 +123,35 @@ public:
     std::vector<wall_coordinates_t> GetWalls() const;
 
 private:
+    //!
+    //! \brief table_size_ Describes size of game board
+    //!
     coordinate_t table_size_;
+
+    //!
+    //! \brief balls_ Balls coordinates on board
+    //!
     std::vector <coordinates_t> balls_;
+
+    //!
+    //! \brief holes_ Holes coordinates on board
+    //!
     std::vector <coordinates_t> holes_;
+
+    //!
+    //! \brief walls_ Walls installed on board. Doesnot contain border walls
+    //!
     std::vector <wall_coordinates_t> walls_;
 
+    //!
+    //! \brief status_ Describes parsing status of input data
+    //!
     Status status_;
 
+    //!
+    //! \brief Validate input data for consistence: having no dublicates,
+    //! having only one object on cell
+    //!
     void Validate();
 };
 
