@@ -43,12 +43,12 @@ InputData::InputData(const input_data_t &input)
     }
 
     table_size_  = input.at(0);
-    ball_count_  = input.at(1);
-    walls_count_ = input.at(2);
+    size_t balls_count  = input.at(1);
+    size_t walls_count = input.at(2);
 
     // 4 coordinates for every  ball: ball's coordinate, hole's coordinates
     // 4 coordinates for every wall
-    size_t expected_data_size =  minimum_size + ball_count_ * 4 + walls_count_ * 4;
+    size_t expected_data_size =  minimum_size + balls_count * 4 + walls_count * 4;
     if (input.size() < expected_data_size)
     {
         status_ = Status::IncompliteData;
@@ -59,17 +59,18 @@ InputData::InputData(const input_data_t &input)
         status_ = Status::TooLongData;
         return;
     }
-    else if (ball_count_ == 0)
+
+    if (balls_count == 0)
     {
         status_ = Status::NoBalls;
         return;
     }
 
-    balls_.reserve(ball_count_);
-    holes_.reserve(ball_count_);
-    walls_.reserve(walls_count_);
+    balls_.reserve(balls_count);
+    holes_.reserve(balls_count);
+    walls_.reserve(walls_count);
 
-    for (ball_id_t i=0; i<ball_count_; ++i)
+    for (ball_id_t i=0; i<balls_count; ++i)
     {
         size_t current_position = minimum_size + i * 2;
         coordinate_t x (input.at(current_position));
@@ -83,9 +84,9 @@ InputData::InputData(const input_data_t &input)
         balls_.push_back(coords);
     }
 
-    for (ball_id_t i=0; i<ball_count_; ++i)
+    for (ball_id_t i=0; i<balls_count; ++i)
     {
-        size_t current_position = minimum_size + ball_count_ *2 + i * 2;
+        size_t current_position = minimum_size + balls_count *2 + i * 2;
         coordinate_t x (input.at(current_position));
         coordinate_t y (input.at(current_position +1));
         coordinates_t coords (x, y);
@@ -97,18 +98,18 @@ InputData::InputData(const input_data_t &input)
         holes_.push_back(coords);
     }
 
-    size_t start_of_walls = minimum_size + ball_count_ * 4;
+    size_t start_of_walls = minimum_size + balls_count * 4;
 
     if (((input.size() - start_of_walls) % 4 != 0) ||
-        walls_count_ != (input.size() - start_of_walls) / 4)
+        walls_count != (input.size() - start_of_walls) / 4)
     {
         status_ = Status::IncompliteData;
         return;
     }
 
-    for (coordinate_t i=0; i<walls_count_; ++i)
+    for (coordinate_t i=0; i<walls_count; ++i)
     {
-        size_t current_position = minimum_size  + ball_count_ * 4 + i*4;
+        size_t current_position = minimum_size  + balls_count * 4 + i*4;
         coordinate_t x1 (input.at(current_position));
         coordinate_t y1 (input.at(current_position +1));
         coordinate_t x2 (input.at(current_position +2));
@@ -170,12 +171,12 @@ coordinate_t InputData::GetTableSize() const
 
 ball_id_t InputData::GetBallCount() const
 {
-    return ball_count_;
+    return (balls_.size() & 0xFFFFFFFF);
 }
 
 coordinate_t InputData::GetWallCount() const
 {
-    return walls_count_;
+    return (walls_.size() & 0xFFFFFFFF);
 }
 
 std::vector<wall_coordinates_t> InputData::GetWalls() const

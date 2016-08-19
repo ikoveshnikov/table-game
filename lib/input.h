@@ -124,8 +124,6 @@ public:
 
 private:
     coordinate_t table_size_;
-    ball_id_t ball_count_;
-    coordinate_t walls_count_;
     std::vector <coordinates_t> balls_;
     std::vector <coordinates_t> holes_;
     std::vector <wall_coordinates_t> walls_;
