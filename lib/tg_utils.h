@@ -104,7 +104,7 @@ inline bool IsValid(const wall_coordinates_t &c, const coordinate_t table_size)
 }
 
 template < typename T >
-inline bool FindDuplicates (const std::vector<T> & v)
+inline bool HasDuplicates (const std::vector<T> & v)
 {
     for(size_t i = 0; i < v.size() - 1; ++i)
     {

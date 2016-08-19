@@ -185,18 +185,18 @@ std::vector<wall_coordinates_t> InputData::GetWalls() const
 
 void InputData::Validate()
 {
-    if (FindDuplicates(balls_))
+    if (HasDuplicates(balls_))
     {
         status_ = Status::Duplicates;
         return;
     }
-    if (FindDuplicates(holes_))
+    if (HasDuplicates(holes_))
     {
         status_ = Status::Duplicates;
         return;
     }
 
-    if (FindDuplicates(walls_))
+    if (HasDuplicates(walls_))
     {
         status_ = Status::Duplicates;
         return;
