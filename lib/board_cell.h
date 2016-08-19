@@ -29,35 +29,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_TABLE_H
-#define TG_TABLE_H
+#ifndef TG_BOARD_CELL_H
+#define TG_BOARD_CELL_H
 
-#include <map>
-#include <vector>
-#include <string>
-#include <map>
-
-#include "tg_types.h"
 #include "cell_object.h"
-#include "input.h"
-#include "board_cell.h"
-#include "ball.h"
 
-class GameTable
+class BoardCell : public CellObject
 {
 public:
-    GameTable (const InputData & in);
-    ~GameTable() = default;
+    struct Walls
+    {
+        bool north;
+        bool west;
+        bool south;
+        bool east;
+    };
+    BoardCell (Walls w);
+    BoardCell ();
+    ~BoardCell ();
 
+    void AddWall (Direction at);
+    bool HasWall (Direction at) const;
 
-    std::map<const coordinates_t, BoardCell> GetBoard() const;
+    void AddHole (ball_id_t id);
+    bool HasHole () const;
+    ball_id_t HoleId() const;
 
-    coordinate_t GetTableSize() const;
-
-private:
-    std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
-    coordinate_t table_size_;
+protected:
+    Walls walls_;
+    bool hole_;
+    ball_id_t hole_id_;
 };
 
-#endif // TG_TABLE_H
+#endif //TG_BOARD_CELL_H

@@ -103,8 +103,18 @@ struct wall_coordinates_t
 
 //! \brief Ball number
 using ball_id_t = coordinate_t;
+//! invalid ball id
+#define INVALID_ID 0
 
 //! \brief input data type. Vector of coordinates
 using input_data_t = std::vector<coordinate_t>;
+
+enum class Direction
+{
+    North,
+    West,
+    South,
+    East
+};
 
 #endif // TG_TYPES_H

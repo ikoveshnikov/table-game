@@ -30,4 +30,94 @@
  */
 
 #include "table.h"
+#include "tg_utils.h"
 
+
+GameTable::GameTable(const InputData &in)
+{
+    table_size_ = in.GetTableSize();
+
+    for (coordinate_t i=1; i<table_size_; ++i)
+    {
+        for (coordinate_t j=1; j<table_size_; ++j)
+        {
+            board_.insert(std::make_pair(coordinates_t(i,j), BoardCell()));
+        }
+    }
+
+    // add walls on borders
+    for (coordinate_t i=1; i<table_size_; ++i)
+    {
+        coordinates_t c_up    (i, 1);
+        coordinates_t c_down  (i, table_size_);
+        coordinates_t c_left  (1, i);
+        coordinates_t c_right (table_size_, i);
+
+        board_[c_up].AddWall(Direction::North);
+        board_[c_down].AddWall(Direction::South);
+        board_[c_left].AddWall(Direction::West);
+        board_[c_right].AddWall(Direction::East);
+    }
+
+    auto walls = in.GetWalls();
+    for (auto i : walls)
+    {
+        if (i.first.x == i.second.x)
+        {
+            // vertical neigbours
+            if (i.first.y < i.second.y)
+            {
+                // first is upper than second
+                board_[i.first].AddWall(Direction::South);
+                board_[i.second].AddWall(Direction::North);
+            }
+            else
+            {
+                board_[i.first].AddWall(Direction::North);
+                board_[i.second].AddWall(Direction::South);
+            }
+        }
+        else
+        {
+            // horisontal neighbours
+            if (i.first.x < i.second.x)
+            {
+                // first is left to second
+                board_[i.first].AddWall(Direction::East);
+                board_[i.second].AddWall(Direction::West);
+            }
+            else
+            {
+                board_[i.first].AddWall(Direction::West);
+                board_[i.second].AddWall(Direction::East);
+            }
+        }
+    }
+
+    auto holes = in.GetHoles();
+    ball_id_t hole_id = 1;
+    for (auto i : holes)
+    {
+        board_[i].AddHole(hole_id);
+        ++hole_id;
+    }
+
+    auto balls = in.GetBalls();
+    ball_id_t ball_id = 1;
+    for (auto i : balls)
+    {
+        balls_.insert(std::make_pair(i, Ball(ball_id)));
+        ++ball_id;
+    }
+
+}
+
+std::map<const coordinates_t, BoardCell> GameTable::GetBoard() const
+{
+    return board_;
+}
+
+coordinate_t GameTable::GetTableSize() const
+{
+    return table_size_;
+}

@@ -29,35 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_TABLE_H
-#define TG_TABLE_H
-
-#include <map>
-#include <vector>
-#include <string>
-#include <map>
-
-#include "tg_types.h"
-#include "cell_object.h"
-#include "input.h"
-#include "board_cell.h"
 #include "ball.h"
 
-class GameTable
+Ball::Ball(ball_id_t id)
+    : CellObject (Type::Ball)
+    , id_(id)
 {
-public:
-    GameTable (const InputData & in);
-    ~GameTable() = default;
 
+}
 
-    std::map<const coordinates_t, BoardCell> GetBoard() const;
+Ball::~Ball()
+{
 
-    coordinate_t GetTableSize() const;
+}
 
-private:
-    std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
-    coordinate_t table_size_;
-};
+Ball::CollisionResult Ball::CollisionWith(const BoardCell &cell, Direction move_to) const
+{
+    if (cell.HasHole())
+    {
+        return (cell.HoleId() == id_) ? Ball::CollisionResult::FallToHoleOk
+                                      : Ball::CollisionResult::FallToHoleFail;
+    }
 
-#endif // TG_TABLE_H
+    bool bumped_to_wall = cell.HasWall(move_to);
+    return bumped_to_wall ? Ball::CollisionResult::Stop
+                          : Ball::CollisionResult::Pass;
+}

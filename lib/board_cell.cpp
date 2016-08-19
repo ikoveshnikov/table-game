@@ -29,35 +29,75 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_TABLE_H
-#define TG_TABLE_H
-
-#include <map>
-#include <vector>
-#include <string>
-#include <map>
-
-#include "tg_types.h"
-#include "cell_object.h"
-#include "input.h"
 #include "board_cell.h"
-#include "ball.h"
 
-class GameTable
+BoardCell::BoardCell(BoardCell::Walls w)
+    : CellObject (CellObject::Type::BoardCell)
+    , walls_(w)
 {
-public:
-    GameTable (const InputData & in);
-    ~GameTable() = default;
+}
+
+BoardCell::BoardCell()
+    : CellObject (CellObject::Type::BoardCell)
+    , walls_({false, false, false, false})
+    , hole_(false)
+    , hole_id_(INVALID_ID)
+{
+}
+
+BoardCell::~BoardCell()
+{
+
+}
+
+void BoardCell::AddWall(Direction at)
+{
+    switch (at)
+    {
+    case Direction::East:
+        walls_.east = true;
+        break;
+    case Direction::West:
+        walls_.west = true;
+        break;
+    case Direction::North:
+        walls_.north = true;
+        break;
+    case Direction::South:
+        walls_.south = true;
+        break;
+    }
+}
+
+bool BoardCell::HasWall(Direction at) const
+{
+    switch (at)
+    {
+    case Direction::East:
+        return walls_.east;
+    case Direction::West:
+        return walls_.west;
+    case Direction::North:
+        return walls_.north;
+    case Direction::South:
+        return walls_.south;
+    }
+    return false;
+}
+
+void BoardCell::AddHole(ball_id_t id)
+{
+    hole_ = true;
+}
+
+bool BoardCell::HasHole() const
+{
+    return hole_;
+}
+
+ball_id_t BoardCell::HoleId() const
+{
+    return hole_id_;
+}
 
 
-    std::map<const coordinates_t, BoardCell> GetBoard() const;
-
-    coordinate_t GetTableSize() const;
-
-private:
-    std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
-    coordinate_t table_size_;
-};
-
-#endif // TG_TABLE_H

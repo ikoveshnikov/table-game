@@ -29,35 +29,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_TABLE_H
-#define TG_TABLE_H
+#ifndef TG_BALL_H
+#define TG_BALL_H
 
-#include <map>
-#include <vector>
-#include <string>
-#include <map>
-
-#include "tg_types.h"
 #include "cell_object.h"
-#include "input.h"
 #include "board_cell.h"
-#include "ball.h"
 
-class GameTable
+class Ball : public CellObject
 {
 public:
-    GameTable (const InputData & in);
-    ~GameTable() = default;
+    Ball(ball_id_t id);
+    ~Ball();
 
+    enum class CollisionResult
+    {
+        Pass,
+        FallToHoleFail,
+        FallToHoleOk,
+        Stop
+    };
 
-    std::map<const coordinates_t, BoardCell> GetBoard() const;
-
-    coordinate_t GetTableSize() const;
+    CollisionResult CollisionWith (const BoardCell & cell, Direction move_to) const;
 
 private:
-    std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
-    coordinate_t table_size_;
+    ball_id_t id_;
 };
 
-#endif // TG_TABLE_H
+#endif //TG_BALL_H

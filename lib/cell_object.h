@@ -29,35 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_TABLE_H
-#define TG_TABLE_H
-
-#include <map>
-#include <vector>
-#include <string>
-#include <map>
+#ifndef TG_CELL_OBJECT_H
+#define TG_CELL_OBJECT_H
 
 #include "tg_types.h"
-#include "cell_object.h"
-#include "input.h"
-#include "board_cell.h"
-#include "ball.h"
 
-class GameTable
+#include <ostream>
+
+class CellObject
 {
 public:
-    GameTable (const InputData & in);
-    ~GameTable() = default;
+    enum class Type
+    {
+        BoardCell,
+        Ball
+    };
 
+    CellObject(Type t) : type_(t) {}
+    virtual ~CellObject() {}
 
-    std::map<const coordinates_t, BoardCell> GetBoard() const;
+    Type GetType() const { return type_; }
 
-    coordinate_t GetTableSize() const;
-
-private:
-    std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
-    coordinate_t table_size_;
+protected:
+    Type type_;
 };
 
-#endif // TG_TABLE_H
+#endif // TG_CELL_OBJECT_H
