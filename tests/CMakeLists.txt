@@ -27,3 +27,4 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_boost_test(input.cpp tg-core)
 add_boost_test(file_ops.cpp tg-core)
+add_boost_test(utils.cpp tg-core)

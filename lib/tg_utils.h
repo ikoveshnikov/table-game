@@ -33,8 +33,9 @@
 #define TG_UTILS_H
 
 #include "tg_types.h"
-#include <set>
 #include <cstring>
+
+
 
 inline bool
 operator== (const coordinates_t & l, const coordinates_t & r)
@@ -45,7 +46,7 @@ operator== (const coordinates_t & l, const coordinates_t & r)
 inline bool
 operator!= (const coordinates_t & l, const coordinates_t & r)
 {
-    return ((l.x != r.x) && (l.y != r.y));
+    return ((l.x != r.x) || (l.y != r.y));
 }
 
 inline bool
@@ -83,8 +84,7 @@ operator!= (const wall_coordinates_t & l, const wall_coordinates_t & r)
 {
     // No matter which of cell is first and which is second one
     // border is BETWEEN them
-    return ((l.first  != r.first)  && (l.second != r.second)) ||
-            ((l.first != r.second) && (l.second != r.first));
+    return (! (l == r));
 }
 
 inline std::ostream &
@@ -125,10 +125,32 @@ inline bool IsValid(const coordinates_t &c, const coordinate_t table_size)
              IsValid(c.y, table_size) );
 }
 
+//!
+//! \brief IsNeigbours checks if two cells are neigbours (have common border)
+//! \param l first cell
+//! \param r second cell
+//! \return tre if neighbours
+//!
+inline bool IsNeigbours (const coordinates_t &l, const coordinates_t &r)
+{
+    bool h_neighbours = (l.y == r.y) && ( (l.x+1 == r.x ) || (l.x == r.x+1) );
+    bool v_neighbours = (l.x == r.x) && ( (l.y+1 == r.y ) || (l.y == r.y+1) );
+
+    return (h_neighbours || v_neighbours);
+}
+
+//!
+//! \brief IsValid checks wall is valid: every coordinate is valid and it's
+//! cells are neigbours
+//! \param c wall coordinates
+//! \param table_size size of game board
+//! \return true if valid
+//!
 inline bool IsValid(const wall_coordinates_t &c, const coordinate_t table_size)
 {
     return ( IsValid(c.first, table_size) &&
-             IsValid(c.second, table_size) );
+             IsValid(c.second, table_size) &&
+             IsNeigbours(c.first, c.second));
 }
 
 //!
