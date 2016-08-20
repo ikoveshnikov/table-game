@@ -60,4 +60,7 @@ private:
     coordinate_t table_size_;
 };
 
+std::ostream &
+operator << (std::ostream & os, const GameTable & gt);
+
 #endif // TG_TABLE_H

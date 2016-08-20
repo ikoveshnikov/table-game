@@ -30,6 +30,9 @@
  */
 
 #include "table.h"
+
+#include <iomanip>
+
 #include "tg_utils.h"
 
 
@@ -120,4 +123,106 @@ std::map<const coordinates_t, BoardCell> GameTable::GetBoard() const
 coordinate_t GameTable::GetTableSize() const
 {
     return table_size_;
+}
+
+std::ostream &
+operator << (std::ostream & os, const GameTable & gt)
+{
+    auto board = gt.GetBoard();
+    auto table_size = gt.GetTableSize();
+
+    for (coordinate_t j=1; j<=table_size; ++j)
+    {
+        for (coordinate_t i=1; i<=table_size; ++i)
+        {
+            os << ". . . .";
+        }
+        os << ".\n";
+
+        for (coordinate_t i=1; i<=table_size; ++i)
+        {
+            os << ".";
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::North) &&
+                board.at(coordinates_t(i,j)).HasWall(Direction::West))
+                os << "┌";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::North))
+                    os << "─";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::West))
+                    os << "│";
+            else
+                os << " ";
+
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::North))
+                os << "────";
+            else
+                os << "    ";
+
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::North) &&
+                board.at(coordinates_t(i,j)).HasWall(Direction::East))
+                os << "┐";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::North))
+                    os << "─";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::East))
+                    os << "│";
+            else
+                os << " ";
+        }
+        os << ".\n";
+
+        for (coordinate_t i=1; i<=table_size; ++i)
+        {
+            os << ".";
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::West))
+                os << "│";
+            else
+                os << " ";
+            if (board.at(coordinates_t(i,j)).HasHole())
+                os << "H " << std::setw(2) << board.at(coordinates_t(i,j)).HoleId();
+            else
+                os << "    ";
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::East))
+                os << "│";
+            else
+                os << " ";
+
+        }
+        os << ".\n";
+
+        for (coordinate_t i=1; i<=table_size; ++i)
+        {
+            os << ".";
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::South) &&
+                board.at(coordinates_t(i,j)).HasWall(Direction::West))
+                os << "└";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::South))
+                    os << "─";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::West))
+                    os << "│";
+            else
+                os << " ";
+
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::South))
+                os << "────";
+            else
+                os << "    ";
+
+            if (board.at(coordinates_t(i,j)).HasWall(Direction::South) &&
+                board.at(coordinates_t(i,j)).HasWall(Direction::East))
+                os << "┘";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::South))
+                    os << "─";
+            else if (board.at(coordinates_t(i,j)).HasWall(Direction::East))
+                    os << "│";
+            else
+                os << " ";
+        }
+        os << ".\n";
+    }
+    for (coordinate_t j=1; j<=table_size; ++j)
+    {
+        os << ". . . .";
+    }
+    os << ".\n";
+
+    return os;
 }
