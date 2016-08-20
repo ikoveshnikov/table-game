@@ -40,7 +40,7 @@ BoardCell::BoardCell(BoardCell::Walls w)
 BoardCell::BoardCell()
     : CellObject (CellObject::Type::BoardCell)
     , walls_({false, false, false, false})
-    , hole_(false)
+    , has_hole_(false)
     , hole_id_(INVALID_ID)
 {
 }
@@ -87,12 +87,13 @@ bool BoardCell::HasWall(Direction at) const
 
 void BoardCell::AddHole(ball_id_t id)
 {
-    hole_ = true;
+    has_hole_ = true;
+    hole_id_ = id;
 }
 
 bool BoardCell::HasHole() const
 {
-    return hole_;
+    return has_hole_;
 }
 
 ball_id_t BoardCell::HoleId() const

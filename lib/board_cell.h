@@ -57,7 +57,7 @@ public:
 
 protected:
     Walls walls_;
-    bool hole_;
+    bool has_hole_;
     ball_id_t hole_id_;
 };
 
