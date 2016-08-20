@@ -37,7 +37,7 @@ GameTable::GameTable(const InputData &in)
 {
     table_size_ = in.GetTableSize();
 
-    for (coordinate_t i=1; i<table_size_; ++i)
+    for (coordinate_t i=1; i<=table_size_; ++i)
     {
         for (coordinate_t j=1; j<table_size_; ++j)
         {
@@ -46,7 +46,7 @@ GameTable::GameTable(const InputData &in)
     }
 
     // add walls on borders
-    for (coordinate_t i=1; i<table_size_; ++i)
+    for (coordinate_t i=1; i<=table_size_; ++i)
     {
         coordinates_t c_up    (i, 1);
         coordinates_t c_down  (i, table_size_);
