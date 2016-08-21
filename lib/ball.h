@@ -51,6 +51,8 @@ public:
 
     CollisionResult CollisionWith (const BoardCell & cell, Direction move_to) const;
 
+    ball_id_t GetId ();
+
 private:
     ball_id_t id_;
 };

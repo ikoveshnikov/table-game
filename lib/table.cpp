@@ -360,3 +360,78 @@ operator << (std::ostream & os, const GameTable & gt)
 
     return os;
 }
+
+bool GameTable::FindBestMoves()
+{
+    bool first = true;
+
+    for (auto ball : balls_)
+    {
+        if (first)
+        {
+            moves_ = FindAllMoves(ball.first,
+                                  holes_.at(ball.second.GetId()),
+                                  ball.second);
+        }
+        else
+        {
+            std::list <std::list <Movement> > checked_moves;
+            for (auto moves : moves_)
+            {
+                auto checked = CheckMovesForBall(moves, ball.second);
+                for (auto i : checked)
+                {
+                    checked_moves.push_back(i);
+                }
+            }
+            moves_ = checked_moves;
+        }
+    }
+
+    SaveBestMoves();
+
+    return (!moves_.empty());
+}
+
+void GameTable::SaveBestMoves()
+{
+    std::list <std::list <Movement> > best_moves;
+    size_t min_move_count = 0;
+
+    for (auto i=moves_.begin(); i!=moves_.end(); ++i)
+    {
+        bool valid = false;
+        for (auto move : *i)
+        {
+            valid = move.IsGood();
+            if (!valid)
+            {
+                break;
+            }
+        }
+
+        if (!valid)
+        {
+            continue;
+        }
+
+        // horaay! this move is valid
+        if (best_moves.empty())
+        {
+            best_moves.push_back(*i);
+            min_move_count = i->size();
+        }
+        else if (i->size() == min_move_count)
+        {
+            best_moves.push_back(*i);
+        }
+        else if (i->size() < min_move_count)
+        {
+            best_moves.clear();
+            best_moves.push_back(*i);
+            min_move_count = i->size();
+        }
+    }
+
+    moves_ = best_moves;
+}

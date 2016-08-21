@@ -59,3 +59,8 @@ Ball::CollisionResult Ball::CollisionWith(const BoardCell &cell, Direction move_
                               : Ball::CollisionResult::FallToHoleOrPass;
     }
 }
+
+ball_id_t Ball::GetId()
+{
+    return id_;
+}

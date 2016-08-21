@@ -36,6 +36,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <list>
 
 #include "tg_types.h"
 #include "cell_object.h"
@@ -43,6 +44,7 @@
 #include "board_cell.h"
 #include "ball.h"
 #include "move_graph.h"
+#include "movement.h"
 
 class GameTable
 {
@@ -65,12 +67,24 @@ protected:
     std::map <const coordinates_t, GraphItem> move_graph_;
     coordinate_t table_size_;
 
+    std::list <std::list <Movement> > moves_;
+
     void BuildMoveGraph ();
 
     std::pair <Ball::CollisionResult, coordinates_t>
     RollBall(const coordinates_t & start_from,
              const Direction to) const;
     void FillGraphItemInDirection (GraphItem & gi, coordinates_t current_cell, Direction move_to) const;
+
+    // all about movement
+    // ensure movement suits the next ball. it can has more than one variants
+    std::map <ball_id_t, const coordinates_t> holes_;
+    std::list <std::list <Movement> > CheckMovesForBall (std::list <Movement> & moves, Ball & ball);
+    std::list <std::list <Movement> > FindAllMoves (const coordinates_t & from,
+                                                    const coordinates_t & to,
+                                                    Ball & ball);
+    void SaveBestMoves ();
+    bool FindBestMoves ();
 };
 
 std::ostream &
