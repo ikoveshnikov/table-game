@@ -65,7 +65,7 @@ public:
 
 protected:
     std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
+    std::map <coordinates_t, Ball> balls_;
     std::map <const coordinates_t, GraphItem> move_graph_;
     coordinate_t table_size_;
 
@@ -82,7 +82,6 @@ protected:
 
     // all about movement
     // ensure movement suits the next ball. it can has more than one variants
-    std::list <std::list <Movement> > CheckMovesForBall (std::list <Movement> & moves, Ball & ball);
     std::list <std::list <Movement> > FindAllMoves (Ball & ball);
     std::list <std::list <Movement> >
     AddMoves (std::list<Movement> &moves,
@@ -94,8 +93,13 @@ protected:
                       const coordinates_t & current_cell,
                       Direction to,
                       Ball & ball);
-    void SaveBestMoves ();
     bool FindBestMoves ();
+    void CheckMoves (ball_id_t reference);
+    bool SimulateMoves (std::list<Movement> &movements,
+                        ball_id_t reference);
+    bool RollAllBalls (std::map <coordinates_t, Ball> & balls_state,
+                       const Movement & move,
+                       ball_id_t reference);
 };
 
 std::ostream &
