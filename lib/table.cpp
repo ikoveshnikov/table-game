@@ -125,6 +125,87 @@ coordinate_t GameTable::GetTableSize() const
     return table_size_;
 }
 
+void GameTable::CalculateMoves()
+{
+    BuildMoveGraph();
+}
+
+void GameTable::BuildMoveGraph()
+{
+    //TODO: run this code in parallel, using OpenMP or Intel TBB
+    for (auto i : board_)
+    {
+        coordinates_t cell = i.first;
+        GraphItem gi;
+
+        FillGraphItemInDirection(gi, cell, Direction::North);
+        FillGraphItemInDirection(gi, cell, Direction::West);
+        FillGraphItemInDirection(gi, cell, Direction::South);
+        FillGraphItemInDirection(gi, cell, Direction::East);
+
+        move_graph_.insert(std::make_pair(cell, gi));
+    }
+}
+
+std::pair<Ball::CollisionResult, coordinates_t>
+GameTable::RollBall(const coordinates_t &start_from,
+                    const Direction to) const
+{
+    coordinates_t current_cell = start_from;
+    Ball::CollisionResult collision = Ball::CollisionResult::Pass;
+    Ball ball (INVALID_ID);
+
+    while ( (collision = ball.CollisionWith(board_.at(current_cell), to)) ==
+            Ball::CollisionResult::Pass )
+    {
+        switch (to)
+        {
+        case Direction::North:
+            current_cell.x -= 1;
+            break;
+        case Direction::West:
+            current_cell.y -= 1;
+            break;
+        case Direction::South:
+            current_cell.x += 1;
+            break;
+        case Direction::East:
+            current_cell.y += 1;
+            break;
+        }
+    }
+
+    return std::make_pair(collision, current_cell);
+}
+
+void GameTable::FillGraphItemInDirection(GraphItem &gi,
+                                         coordinates_t current_cell,
+                                         Direction move_to) const
+{
+    Ball::CollisionResult collision = Ball::CollisionResult::Pass;
+    coordinates_t start_cell = current_cell;
+    coordinates_t collision_cell;
+    do {
+        auto c_result = RollBall(start_cell, move_to);
+        collision = c_result.first;
+        collision_cell = c_result.second;
+        switch (collision)
+        {
+        case Ball::CollisionResult::Pass:
+            break;
+        case Ball::CollisionResult::Stop:
+            gi.AddNeighbour(move_to, collision_cell);
+            break;
+        case Ball::CollisionResult::FallToHoleOk:
+        case Ball::CollisionResult::FallToHoleFail:
+            gi.AddHole(move_to, collision_cell);
+            break;
+        }
+        start_cell = collision_cell;
+
+    } while (collision != Ball::CollisionResult::Stop);
+}
+
 std::ostream &
 operator << (std::ostream & os, const GameTable & gt)
 {

@@ -29,49 +29,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TG_TABLE_H
-#define TG_TABLE_H
-
-#include <map>
-#include <vector>
-#include <string>
-#include <map>
+#ifndef TG_MOVE_GRAPH_H
+#define TG_MOVE_GRAPH_H
 
 #include "tg_types.h"
-#include "cell_object.h"
-#include "input.h"
-#include "board_cell.h"
-#include "ball.h"
-#include "move_graph.h"
+#include "vector"
 
-class GameTable
+class GraphItem
 {
 public:
-    GameTable (const InputData & in);
-    ~GameTable() = default;
+    GraphItem();
+    ~GraphItem() = default;
 
+    const coordinates_t & GetNeigbour(Direction at) const;
+    const std::vector <coordinates_t> & GetHolesOnWayTo (Direction to) const;
 
-    std::map<const coordinates_t, BoardCell> GetBoard() const;
-
-    coordinate_t GetTableSize() const;
-
-    void CalculateMoves ();
+    void AddNeighbour (Direction at, coordinates_t cell);
+    void AddHole      (Direction at, coordinates_t cell);
 
 private:
-    std::map <const coordinates_t, BoardCell> board_;
-    std::map <const coordinates_t, Ball> balls_;
-    std::map <const coordinates_t, GraphItem> move_graph_;
-    coordinate_t table_size_;
+    //direct connection
+    coordinates_t neighbour_north_;
+    coordinates_t neighbour_west_;
+    coordinates_t neighbour_south_;
+    coordinates_t neighbour_east_;
 
-    void BuildMoveGraph ();
+    //holes on way to connections
+    std::vector<coordinates_t> holes_north_;
+    std::vector<coordinates_t> holes_west_;
+    std::vector<coordinates_t> holes_south_;
+    std::vector<coordinates_t> holes_east_;
 
-    std::pair <Ball::CollisionResult, coordinates_t>
-    RollBall(const coordinates_t & start_from,
-             const Direction to) const;
-    void FillGraphItemInDirection (GraphItem & gi, coordinates_t current_cell, Direction move_to) const;
+    const coordinates_t invalid_coordinates_;
+    const std::vector<coordinates_t> invalid_vector_;
 };
 
-std::ostream &
-operator << (std::ostream & os, const GameTable & gt);
-
-#endif // TG_TABLE_H
+#endif //TG_MOVE_GRAPH_H
