@@ -61,6 +61,8 @@ public:
 
     std::map<const coordinates_t, GraphItem> GetMoveGraph() const;
 
+    void PrintMoves (std::ostream & os);
+
 protected:
     std::map <const coordinates_t, BoardCell> board_;
     std::map <const coordinates_t, Ball> balls_;
@@ -68,6 +70,8 @@ protected:
     coordinate_t table_size_;
 
     std::list <std::list <Movement> > moves_;
+    std::map <ball_id_t, coordinates_t> holes_;
+
 
     void BuildMoveGraph ();
 
@@ -78,11 +82,18 @@ protected:
 
     // all about movement
     // ensure movement suits the next ball. it can has more than one variants
-    std::map <ball_id_t, const coordinates_t> holes_;
     std::list <std::list <Movement> > CheckMovesForBall (std::list <Movement> & moves, Ball & ball);
-    std::list <std::list <Movement> > FindAllMoves (const coordinates_t & from,
-                                                    const coordinates_t & to,
-                                                    Ball & ball);
+    std::list <std::list <Movement> > FindAllMoves (Ball & ball);
+    std::list <std::list <Movement> >
+    AddMoves (std::list<Movement> &moves,
+                         Ball & ball);
+    //return true, empty list if reached target
+    // return false, if no moves available
+    // return true, list of moves if ok
+    bool AddNextMove (Movement & last_move, std::list<Movement> &next_move,
+                      const coordinates_t & current_cell,
+                      Direction to,
+                      Ball & ball);
     void SaveBestMoves ();
     bool FindBestMoves ();
 };

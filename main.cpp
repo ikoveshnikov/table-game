@@ -37,6 +37,7 @@
 #include "tg_types.h"
 #include "file_ops.h"
 #include "input.h"
+#include "table.h"
 
 void Usage (std::string program_name)
 {
@@ -105,6 +106,13 @@ int main(int argc, char *argv[])
         std::cout << data.GetErrorString();
         return 1;
     }
+
+    GameTable t(data);
+
+    std::cout << t;
+    t.CalculateMoves();
+    std::cout << t;
+    t.PrintMoves(std::cout);
 
     return 0;
 }

@@ -55,6 +55,12 @@ operator< (const coordinates_t & l, const coordinates_t & r)
     return (std::memcmp(&l, &r, sizeof(coordinates_t)) < 0);
 }
 
+inline bool
+operator<= (const coordinates_t & l, const coordinates_t & r)
+{
+    return (std::memcmp(&l, &r, sizeof(coordinates_t)) <= 0);
+}
+
 //!
 //! \brief operator == Compare two wall coordinates.
 //! Since each wall coordinate is represented by two neighbours cells
@@ -201,6 +207,26 @@ inline std::ostream & operator<< (std::ostream & os, const std::vector <T> & v)
     for (auto i : v)
     {
         os << i << " ";
+    }
+    return os;
+}
+
+inline std::ostream & operator<< (std::ostream & os, const Direction d)
+{
+    switch (d)
+    {
+    case Direction::North:
+        os << "N";
+        break;
+    case Direction::West:
+        os << "W";
+        break;
+    case Direction::South:
+        os << "S";
+        break;
+    case Direction::East:
+        os << "E";
+        break;
     }
     return os;
 }
