@@ -57,7 +57,7 @@ public:
 
     void CalculateMoves ();
 
-private:
+protected:
     std::map <const coordinates_t, BoardCell> board_;
     std::map <const coordinates_t, Ball> balls_;
     std::map <const coordinates_t, GraphItem> move_graph_;

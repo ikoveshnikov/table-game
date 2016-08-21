@@ -175,3 +175,23 @@ BOOST_AUTO_TEST_CASE( duplicates )
     BOOST_CHECK_EQUAL(HasDuplicates(v_dup), true);
 }
 
+BOOST_AUTO_TEST_CASE( get_neigbour )
+{
+    coordinates_t cell (5,5);
+    coordinates_t n_n_expected (5,4);
+    coordinates_t n_w_expected (4,5);
+    coordinates_t n_s_expected (5,6);
+    coordinates_t n_e_expected (6,5);
+
+    coordinates_t n_n = GetNeighbourCell(cell, Direction::North);
+    BOOST_CHECK_EQUAL(n_n, n_n_expected);
+    coordinates_t n_w = GetNeighbourCell(cell, Direction::West);
+    BOOST_CHECK_EQUAL(n_w, n_w_expected);
+    coordinates_t n_s = GetNeighbourCell(cell, Direction::South);
+    BOOST_CHECK_EQUAL(n_s, n_s_expected);
+    coordinates_t n_e = GetNeighbourCell(cell, Direction::East);
+    BOOST_CHECK_EQUAL(n_e, n_e_expected);
+
+
+}
+

@@ -45,13 +45,17 @@ Ball::~Ball()
 
 Ball::CollisionResult Ball::CollisionWith(const BoardCell &cell, Direction move_to) const
 {
-    if (cell.HasHole())
-    {
-        return (cell.HoleId() == id_) ? Ball::CollisionResult::FallToHoleOk
-                                      : Ball::CollisionResult::FallToHoleFail;
-    }
-
     bool bumped_to_wall = cell.HasWall(move_to);
-    return bumped_to_wall ? Ball::CollisionResult::Stop
-                          : Ball::CollisionResult::Pass;
+
+    if (!cell.HasHole())
+    {
+        return bumped_to_wall ? Ball::CollisionResult::Stop
+                              : Ball::CollisionResult::Pass;
+    }
+    else
+    {
+
+        return bumped_to_wall ? Ball::CollisionResult::FallToHoleOrStop
+                              : Ball::CollisionResult::FallToHoleOrPass;
+    }
 }

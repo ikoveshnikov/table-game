@@ -153,6 +153,29 @@ inline bool IsValid(const wall_coordinates_t &c, const coordinate_t table_size)
              IsNeigbours(c.first, c.second));
 }
 
+inline coordinates_t
+GetNeighbourCell (const coordinates_t & cell, Direction side)
+{
+    coordinates_t neighbour = cell;
+
+    switch (side)
+    {
+    case Direction::North:
+        neighbour.y -= 1;
+        break;
+    case Direction::West:
+        neighbour.x -= 1;
+        break;
+    case Direction::South:
+        neighbour.y += 1;
+        break;
+    case Direction::East:
+        neighbour.x += 1;
+        break;
+    }
+    return neighbour;
+}
+
 //!
 //! /brief Find duplicated items in vector
 //!

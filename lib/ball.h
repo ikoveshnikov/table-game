@@ -44,8 +44,8 @@ public:
     enum class CollisionResult
     {
         Pass,
-        FallToHoleFail,
-        FallToHoleOk,
+        FallToHoleOrPass,
+        FallToHoleOrStop,
         Stop
     };
 

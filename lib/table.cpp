@@ -152,28 +152,41 @@ GameTable::RollBall(const coordinates_t &start_from,
                     const Direction to) const
 {
     coordinates_t current_cell = start_from;
+    coordinates_t next_cell = current_cell;
     Ball::CollisionResult collision = Ball::CollisionResult::Pass;
     Ball ball (INVALID_ID);
 
-    while ( (collision = ball.CollisionWith(board_.at(current_cell), to)) ==
-            Ball::CollisionResult::Pass )
-    {
-        switch (to)
+    do {
+        current_cell = next_cell;
+        collision = ball.CollisionWith(board_.at(current_cell), to);
+
+        // If ball stands on the cell with hole during start of the move
+        // it cannot fall to the hole now. It has fallen here
+        // in previous move
+        switch (collision)
         {
-        case Direction::North:
-            current_cell.x -= 1;
+        case Ball::CollisionResult::FallToHoleOrPass:
+            if (current_cell == start_from)
+            {
+                collision = Ball::CollisionResult::Pass;
+            }
             break;
-        case Direction::West:
-            current_cell.y -= 1;
+        case Ball::CollisionResult::FallToHoleOrStop:
+            if (current_cell == start_from)
+            {
+                collision = Ball::CollisionResult::Stop;
+            }
+
             break;
-        case Direction::South:
-            current_cell.x += 1;
-            break;
-        case Direction::East:
-            current_cell.y += 1;
+        case Ball::CollisionResult::Stop:
+            // fallthrough
+        case Ball::CollisionResult::Pass:
+            // nothing to do here
             break;
         }
-    }
+
+        next_cell = GetNeighbourCell(current_cell, to);
+    } while (collision == Ball::CollisionResult::Pass);
 
     return std::make_pair(collision, current_cell);
 }
@@ -196,9 +209,14 @@ void GameTable::FillGraphItemInDirection(GraphItem &gi,
         case Ball::CollisionResult::Stop:
             gi.AddNeighbour(move_to, collision_cell);
             break;
-        case Ball::CollisionResult::FallToHoleOk:
-        case Ball::CollisionResult::FallToHoleFail:
+        case Ball::CollisionResult::FallToHoleOrStop:
+            collision = Ball::CollisionResult::Stop;
+            gi.AddNeighbour(move_to, collision_cell);
             gi.AddHole(move_to, collision_cell);
+            break;
+        case Ball::CollisionResult::FallToHoleOrPass:
+            gi.AddHole(move_to, collision_cell);
+            collision_cell = GetNeighbourCell (collision_cell, move_to);
             break;
         }
         start_cell = collision_cell;
