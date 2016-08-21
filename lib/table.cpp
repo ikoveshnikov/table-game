@@ -144,7 +144,10 @@ void GameTable::PrintMoves(std::ostream &os)
     {
         for (auto move : move_list)
         {
-            os << move.GetMove() << " ";
+            if (!move.IsStartMove())
+            {
+                os << move.GetMove() << " ";
+            }
         }
         os << "\n";
     }
@@ -385,6 +388,7 @@ bool GameTable::FindBestMoves()
         if (first)
         {
             moves_ = FindAllMoves(ball.second);
+            first = false;
         }
         else
         {
@@ -460,9 +464,9 @@ GameTable::FindAllMoves (Ball & ball)
     std::map <coordinates_t, bool>  visited_table;
     for (auto i : balls_)
     {
-        balls.insert(std::make_pair(i.first, i.second.GetId()));
         if (i.second.GetId() == ball.GetId())
         {
+            balls.insert(std::make_pair(i.first, i.second.GetId()));
             visited_table[i.first] = true;
         }
     }
@@ -474,10 +478,11 @@ GameTable::FindAllMoves (Ball & ball)
 
     std::list <Movement> first_move = {start_move};
     std::list <std::list <Movement> > movement_list = {first_move};
+    std::list <std::list <Movement> > final_moves;
 
-    bool found_moves = false;
+    bool repeat = false;
     do {
-        found_moves = false;
+        repeat = false;
         std::list <std::list <Movement> > temporal_list = movement_list;
         movement_list.clear();
         for (auto i : temporal_list)
@@ -485,16 +490,19 @@ GameTable::FindAllMoves (Ball & ball)
             std::list <std::list <Movement> >  new_moves = AddMoves(i, ball);
             for (auto j : new_moves)
             {
-                movement_list.push_back(i);
-            }
-            if (new_moves.size() > 1)
-            {
-                found_moves = true;
+                if (j.back().GetBallPosition(ball.GetId()) == coordinates_t(0,0))
+                {
+                    final_moves.push_back(j);
+                }
+                else
+                {
+                    movement_list.push_back(j);
+                    repeat = true;
+                }
             }
         }
-    } while (found_moves);
-
-    return movement_list;
+    } while (repeat);
+    return final_moves;
 }
 
 std::list <std::list <Movement> >
@@ -504,7 +512,8 @@ GameTable::AddMoves (std::list <Movement> & moves,
     assert((moves.size() != 0));
     Movement & last_move = moves.back();
     const coordinates_t current_cell = last_move.GetBallPosition(ball.GetId());
-    if (current_cell == holes_[ball.GetId()])
+    if ((current_cell == holes_[ball.GetId()]) ||
+        (current_cell == coordinates_t(0,0)))
     {
         std::list <std::list <Movement> > move_list = {moves};
         return move_list;
@@ -585,10 +594,9 @@ bool GameTable::AddNextMove (Movement & last_move, std::list <Movement > & next_
     // next hop is farest step we can make, so need to add several hopps
     // regarding some conditions
 
-    for (auto nearest_hop = GetNeighbourCell(current_cell, to);
-         nearest_hop <= max_hop;
-         nearest_hop = GetNeighbourCell(nearest_hop, to))
-    {
+    auto nearest_hop = current_cell;
+    do {
+        nearest_hop = GetNeighbourCell(nearest_hop, to);
         Movement new_move (to, last_move);
         if (!new_move.SetBallPosition(ball.GetId(), nearest_hop, current_cell))
         {
@@ -619,7 +627,7 @@ bool GameTable::AddNextMove (Movement & last_move, std::list <Movement > & next_
             //no need to go further
             break;
         }
-    }
+    } while (nearest_hop != max_hop);
     return (!next_move.empty());
 }
 
