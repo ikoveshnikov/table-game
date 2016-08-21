@@ -33,7 +33,8 @@
 #define TG_MOVE_GRAPH_H
 
 #include "tg_types.h"
-#include "vector"
+#include <vector>
+#include <ostream>
 
 class GraphItem
 {
@@ -63,5 +64,8 @@ private:
     const coordinates_t invalid_coordinates_;
     const std::vector<coordinates_t> invalid_vector_;
 };
+
+std::ostream &
+operator<< (std::ostream & os, const GraphItem & gi);
 
 #endif //TG_MOVE_GRAPH_H

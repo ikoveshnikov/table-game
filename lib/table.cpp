@@ -130,6 +130,11 @@ void GameTable::CalculateMoves()
     BuildMoveGraph();
 }
 
+std::map<const coordinates_t, GraphItem> GameTable::GetMoveGraph() const
+{
+    return move_graph_;
+}
+
 void GameTable::BuildMoveGraph()
 {
     //TODO: run this code in parallel, using OpenMP or Intel TBB
@@ -322,6 +327,36 @@ operator << (std::ostream & os, const GameTable & gt)
         os << ". . . .";
     }
     os << ".\n";
+
+    os << "\nMove garph status:\n";
+
+    auto graph = gt.GetMoveGraph();
+    for (auto i : graph)
+    {
+        os << i.first << ": " << i.second << "\n";
+        if (!i.second.GetHolesOnWayTo(Direction::North).empty())
+        {
+            os << "\t" << "Holes N: " << i.second.GetHolesOnWayTo(Direction::North)
+               << "\n";
+        }
+        if (!i.second.GetHolesOnWayTo(Direction::West).empty())
+        {
+            os << "\t" << "Holes W: " << i.second.GetHolesOnWayTo(Direction::West)
+               << "\n";
+        }
+        if (!i.second.GetHolesOnWayTo(Direction::South).empty())
+        {
+            os << "\t" << "Holes S: " << i.second.GetHolesOnWayTo(Direction::South)
+               << "\n";
+        }
+        if (!i.second.GetHolesOnWayTo(Direction::East).empty())
+        {
+            os << "\t" << "Holes E: " << i.second.GetHolesOnWayTo(Direction::East)
+               << "\n";
+        }
+    }
+
+    os << "\n";
 
     return os;
 }

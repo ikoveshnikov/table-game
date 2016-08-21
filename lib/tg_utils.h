@@ -195,4 +195,14 @@ inline bool HasDuplicates (const std::vector<T> & v)
     return false;
 }
 
+template <typename T>
+inline std::ostream & operator<< (std::ostream & os, const std::vector <T> & v)
+{
+    for (auto i : v)
+    {
+        os << i << " ";
+    }
+    return os;
+}
+
 #endif // TG_UTILS_H

@@ -57,6 +57,8 @@ public:
 
     void CalculateMoves ();
 
+    std::map<const coordinates_t, GraphItem> GetMoveGraph() const;
+
 protected:
     std::map <const coordinates_t, BoardCell> board_;
     std::map <const coordinates_t, Ball> balls_;

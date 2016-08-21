@@ -30,6 +30,7 @@
  */
 
 #include "move_graph.h"
+#include "tg_utils.h"
 
 GraphItem::GraphItem()
     : neighbour_north_({0,0})
@@ -109,4 +110,13 @@ void GraphItem::AddHole(Direction at, coordinates_t cell)
         holes_east_.push_back(cell);
         break;
     }
+}
+
+std::ostream &operator<<(std::ostream &os, const GraphItem &gi)
+{
+    os << " N: " << gi.GetNeigbour(Direction::North) << " "
+       << " W: " << gi.GetNeigbour(Direction::West) << " "
+       << " S: " << gi.GetNeigbour(Direction::South) << " "
+       << " E: " << gi.GetNeigbour(Direction::East);
+    return os;
 }
