@@ -34,30 +34,83 @@
 
 #include "cell_object.h"
 
+//!
+//! \brief The BoardCell class describes cells on the game board
+//!
 class BoardCell : public CellObject
 {
 public:
+    //!
+    //! \brief The Walls struct describes walls configuration on the cell
+    //!
     struct Walls
     {
-        bool north;
-        bool west;
-        bool south;
-        bool east;
+        bool north; //!< Wall on north side
+        bool west;  //!< Wall on the west side
+        bool south; //!< wall on the south side
+        bool east;  //!< Wall on the east side
     };
+
+    //!
+    //! \brief BoardCell create cell with cpecific wall configuration
+    //! \param w wall configuration
+    //!
     BoardCell (Walls w);
+
+    //!
+    //! \brief BoardCell create cell without walls
+    //!
     BoardCell ();
+
     ~BoardCell ();
 
+    //!
+    //! \brief AddWall add wall on the cell on specific direction
+    //! Neigbour cell must have wall on corresponding side
+    //! \param at side where to place the wall
+    //!
     void AddWall (Direction at);
+
+    //!
+    //! \brief HasWall Check if cell have walls on requested side
+    //! \param at side
+    //! \return true if wall present. false otherwise
+    //!
     bool HasWall (Direction at) const;
 
+    //!
+    //! \brief AddHole Add hole for scpecific ball id
+    //! Every cell can have only one ball
+    //! \param id of the hole
+    //!
     void AddHole (ball_id_t id);
+
+    //!
+    //! \brief HasHole Check if board cell has holes
+    //! \return true if cell has hole
+    //!
     bool HasHole () const;
+
+    //!
+    //! \brief HoleId returns hole id if it is attached to the cell
+    //! \return Hole id, 0 if cell has no hole
+    //!
     ball_id_t HoleId() const;
 
 protected:
+    //!
+    //! \brief walls_ Wall configurations on the cell
+    //!
     Walls walls_;
+
+    //!
+    //! \brief has_hole_ true if cell has hole
+    //!
     bool has_hole_;
+
+    //!
+    //! \brief hole_id_ hole id if cell has hole, 0 otherwise
+    //!
     ball_id_t hole_id_;
 };
 

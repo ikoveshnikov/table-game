@@ -36,21 +36,38 @@
 
 #include <ostream>
 
+//!
+//! \brief The CellObject class Common cell type
+//!
 class CellObject
 {
 public:
+    //!
+    //! \brief The Type enum types of cells
+    //!
     enum class Type
     {
-        BoardCell,
-        Ball
+        BoardCell,  //!< Board cell, can contain holes
+        Ball        //!< Ball, can collide with other cell objects
     };
 
+    //!
+    //! \brief CellObject create cell with cpecific type
+    //! \param t type of the objecct
+    //!
     CellObject(Type t) : type_(t) {}
-    virtual ~CellObject() {}
+    ~CellObject() {}
 
+    //!
+    //! \brief GetType returns type of the object
+    //! \return object type
+    //!
     Type GetType() const { return type_; }
 
 protected:
+    //!
+    //! \brief type_ Object type
+    //!
     Type type_;
 };
 

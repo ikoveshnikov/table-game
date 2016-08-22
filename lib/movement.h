@@ -37,19 +37,44 @@
 
 #include "tg_types.h"
 
+//!
+//! \brief The Movement class stores state during computing possible movements
+//!
 class Movement
 {
 public:
+    //!
+    //! \brief Movement creates movement from previous state
+    //! \param to move direction
+    //! \param previous_move previous board state
+    //!
     Movement(Direction to, const Movement & previous_move);
+
+    //!
+    //! \brief Movement creates state as initial position to prepare for calculations
+    //! \param balls coordinates of balls and their's ids
+    //! \param holes coordinates of holes and their's ids
+    //!
     Movement(const std::map <coordinates_t, ball_id_t> & balls,
              const std::map <coordinates_t, ball_id_t> & holes);
     ~Movement() = default;
 
-    // if move is start one almost all values will be invalid
+    //!
+    //! \brief IsStartMove Start items describes only initial state of board
+    //! and can not tell where to go. Move direction will have invalid value
+    //! \return true if item is initial state
+    //!
     bool IsStartMove () const;
 
-    // if ball fall into the hole, ball and hole will be erased from
-    // corresponding cells.
+    //!
+    //! \brief SetBallPosition update ball position on the board.
+    //! if ball will stend up on cell wth hole, they will destroy each other.
+    //! Caller must be worried abot holes between start and stop positions
+    //! \param ball ball id
+    //! \param current_cell current position on the cell
+    //! \param previous_cell previous position on the cell
+    //! \return false if move is invalid
+    //!
     bool SetBallPosition(ball_id_t ball,
                          const coordinates_t &current_cell,
                          const coordinates_t &previous_cell);

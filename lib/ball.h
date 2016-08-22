@@ -35,25 +35,52 @@
 #include "cell_object.h"
 #include "board_cell.h"
 
+//!
+//! \brief The Ball class describes how ball can move on game board and
+//! how it interacts with holes and wall on the board
+//!
 class Ball : public CellObject
 {
 public:
+    //!
+    //! \brief Ball Create ball object
+    //! \param id ball's id. Valid values is 1->...
+    //! if %id is set to 0, thet dummy object will be created
+    //!
     Ball(ball_id_t id);
     ~Ball();
 
+    //!
+    //! \brief The CollisionResult enum Collision result with othres objects
+    //! on game board
+    //!
     enum class CollisionResult
     {
-        Pass,
-        FallToHoleOrPass,
-        FallToHoleOrStop,
-        Stop
+        Pass,               //!< No collision with this cell
+        FallToHoleOrPass,   //!< Fall to the hole or pass if hole will be closed
+        FallToHoleOrStop,   //!< Fall to the hole or stop in front of wall
+        Stop                //!< Stop in front of the wall
     };
 
+    //!
+    //! \brief CollisionWith Gives result of collision on some cell, depending
+    //! to the objects it has
+    //! \param cell of game table
+    //! \param move_to moving direction
+    //! \return result of collision
+    //!
     CollisionResult CollisionWith (const BoardCell & cell, Direction move_to) const;
 
+    //!
+    //! \brief GetId gives ball id attached to ball
+    //! \return ball id
+    //!
     ball_id_t GetId ();
 
 private:
+    //!
+    //! \brief id_ attaced to the ball
+    //!
     ball_id_t id_;
 };
 

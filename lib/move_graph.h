@@ -36,32 +36,74 @@
 #include <vector>
 #include <ostream>
 
+//!
+//! \brief The GraphItem class node of possible movement graph
+//!
 class GraphItem
 {
 public:
     GraphItem();
     ~GraphItem() = default;
 
+    //!
+    //! \brief GetNeigbour Gives the next node at cpecific direction
+    //! \param at direction
+    //! \return cell coordinates where ball would be if go to specified direction
+    //!
     const coordinates_t & GetNeigbour(Direction at) const;
+
+    //!
+    //! \brief GetHolesOnWayTo Between node and its neighbour can be holes
+    //! and ball can fall there
+    //! \param to direction
+    //! \return vector of holes between node and its neigbour
+    //!
     const std::vector <coordinates_t> & GetHolesOnWayTo (Direction to) const;
 
+    //!
+    //! \brief AddNeighbour adds node as a neigbour on specific direction
+    //! \param at direction
+    //! \param cell neighbour cell address
+    //!
     void AddNeighbour (Direction at, coordinates_t cell);
+
+    //!
+    //! \brief AddHole adds hole between node and its neighbour on specific direction
+    //! \param at direction
+    //! \param cell hole cell address
+    //!
     void AddHole      (Direction at, coordinates_t cell);
 
 private:
-    //direct connection
+    //! \brief neighbour_north_ Northen neigbour
     coordinates_t neighbour_north_;
+
+    //! \brief neighbour_north_ Western neigbour
     coordinates_t neighbour_west_;
+
+    //! \brief neighbour_north_ Southen neigbour
     coordinates_t neighbour_south_;
+
+    //! \brief neighbour_north_ Easten neigbour
     coordinates_t neighbour_east_;
 
-    //holes on way to connections
+
+    //! \brief holes on way north between node and its neigbour
     std::vector<coordinates_t> holes_north_;
+
+    //! \brief holes on way west between node and its neigbour
     std::vector<coordinates_t> holes_west_;
+
+    //! \brief holes on way south between node and its neigbour
     std::vector<coordinates_t> holes_south_;
+
+    //! \brief holes on way east between node and its neigbour
     std::vector<coordinates_t> holes_east_;
 
+    //! dummy data to keep compiller happy
     const coordinates_t invalid_coordinates_;
+
+    //! dummy data to keep compiller happy
     const std::vector<coordinates_t> invalid_vector_;
 };
 
