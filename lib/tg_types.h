@@ -109,12 +109,15 @@ using ball_id_t = coordinate_t;
 //! \brief input data type. Vector of coordinates
 using input_data_t = std::vector<coordinate_t>;
 
+//!
+//! \brief The Direction enum Describes direction of moves
+//!
 enum class Direction
 {
-    North,
-    West,
-    South,
-    East
+    North, //!< move North
+    West,  //!< move West
+    South, //!< move South
+    East   //!< move East
 };
 
 #endif // TG_TYPES_H

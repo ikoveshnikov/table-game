@@ -78,34 +78,101 @@ public:
     bool SetBallPosition(ball_id_t ball,
                          const coordinates_t &current_cell,
                          const coordinates_t &previous_cell);
+
+    //!
+    //! \brief GetBallPosition Get current position for specific ball
+    //! \param ball id of the ball
+    //! \return cell address occupied by the ball. return (0,0) if
+    //! ball not found
+    //!
     const coordinates_t GetBallPosition (ball_id_t ball);
 
+    //!
+    //! \brief GetMove Get move direction. Has invalid value for start moves
+    //! \return movement direction
+    //!
     Direction GetMove () const;
 
+    //!
+    //! \brief GetBallsPositions Return current position of all balls. If ball
+    //! reached it's hole it will not be present in in return value
+    //! \return current position of all balls
+    //!
     const std::map <coordinates_t, ball_id_t> & GetBallsPositions () const;
+
+    //!
+    //! \brief GetHoles Return current state of all states of all the holes.
+    //! If hole is closed by the ball it will not be present in return value;
+    //! \return current state of all holes
+    //!
     const std::map <coordinates_t, ball_id_t> & GetHoles () const;
 
+    //!
+    //! \brief The LoopGuard struct Keep track of loops for all the mooves
+    //!
     struct LoopGuard
     {
+        //! \brief visited_cells_count_ tracks difference from current
+        //! count of visited cells
         size_t visited_cells_count_;
+
+        //! \brief visited_cells_ visited cells. each item has value 'true'
+        //! if cell was visited, otherwise corresponding value is not set
         std::map <coordinates_t, bool> visited_cells_;
     };
 
+    //!
+    //! \brief GetLoopGuard return current state of loop guard
+    //! \return state of loop guard
+    //!
     const std::map <ball_id_t, LoopGuard>  GetLoopGuard () const;
+
+    //!
+    //! \brief InitLoopGuard need to be called before using loop guard.
+    //! Call init of loop guard, update current positions of balls and then
+    //! check for loops with %IsLooped()
+    //!
     void InitLoopGuard ();
+
+    //!
+    //! \brief IsLooped Check if last moves caused game state to be looped.
+    //! First init loop guard by calling  %InitLoopGuard(), update current
+    //! ball positions with %SetBallPosition(). After that safe to use %IsLooped()
+    //! check
+    //!
+    //! If updating ball positions doesnot make balls to visit new cell,
+    //! state just got stack in loop and game will never reach win position
+    //! \return bool true if state was looped
+    //!
     bool IsLooped () const;
 
 
 private:
+    //!
+    //! \brief move_ Describes last move to to get current state. Invalid value
+    //! if movement is start position
+    //!
     Direction move_;
+
+    //!
+    //! \brief start_move_ If true item describes only initial state.
+    //! Field direction is invalid
+    //!
     bool start_move_;
 
-    //track where balls are
+    //!
+    //! \brief occupied_cells_ Describes current ball positions on this move
+    //!
     std::map <coordinates_t, ball_id_t> occupied_cells_;
-    //track which holes are still open
+
+    //!
+    //! \brief holes_state_ Describes open holes on this move
+    //!
     std::map <coordinates_t, ball_id_t> holes_state_;
 
-    // loop guard
+    //!
+    //! \brief loop_guard_ per-ball loop guard
+    //!
     std::map <ball_id_t, LoopGuard> loop_guard_;
 
 };
