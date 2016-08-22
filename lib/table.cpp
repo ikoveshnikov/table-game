@@ -36,8 +36,6 @@
 
 #include "tg_utils.h"
 
-#include <unistd.h>
-
 
 GameTable::GameTable(const InputData &in)
 {
@@ -516,7 +514,10 @@ GameTable::MakeMove (std::list <Movement> & moves, Direction to)
         {
             if (ball.second == previous.second)
             {
-                new_move.SetBallPosition(ball.second, ball.first, previous.first);
+                if (!new_move.SetBallPosition(ball.second, ball.first, previous.first))
+                {
+                    return std::list <Movement> ();
+                }
                 break;
             }
         }
@@ -527,7 +528,10 @@ GameTable::MakeMove (std::list <Movement> & moves, Direction to)
         {
             if (ball.second == previous.second)
             {
-                new_move.SetBallPosition(ball.second, ball.first, previous.first);
+                if (!new_move.SetBallPosition(ball.second, ball.first, previous.first))
+                {
+                    return std::list <Movement> ();
+                }
                 break;
             }
         }
