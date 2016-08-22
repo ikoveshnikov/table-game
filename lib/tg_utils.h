@@ -231,4 +231,25 @@ inline std::ostream & operator<< (std::ostream & os, const Direction d)
     return os;
 }
 
+inline Direction ReverseDirection (Direction d)
+{
+    Direction reverse;
+    switch (d)
+    {
+    case Direction::North:
+        reverse = Direction::South;
+        break;
+    case Direction::West:
+        reverse = Direction::East;
+        break;
+    case Direction::South:
+        reverse = Direction::North;
+        break;
+    case Direction::East:
+        reverse = Direction::West;
+        break;
+    }
+    return reverse;
+}
+
 #endif // TG_UTILS_H

@@ -130,6 +130,7 @@ coordinate_t GameTable::GetTableSize() const
 void GameTable::CalculateMoves()
 {
     BuildMoveGraph();
+    FindAllMoves();
 }
 
 std::map<const coordinates_t, GraphItem> GameTable::GetMoveGraph() const
@@ -395,10 +396,11 @@ void GameTable::FindAllMoves()
 
     Movement start_point (balls, holes);
     std::list <Movement> moves = {start_point};
+    SimulateGame(moves);
 }
 
 
-void GameTable::SimulateGame (std::list <Movement> moves)
+void GameTable::SimulateGame (std::list <Movement> & moves)
 {
     if (IsTooLotMoves(moves))
     {
@@ -406,15 +408,35 @@ void GameTable::SimulateGame (std::list <Movement> moves)
         return;
     }
 
-    auto balls = moves.back().GetBallsPositions();
-    if (balls.size() == 0)
+    auto current_position = moves.back().GetBallsPositions();
+    if (current_position.size() == 0)
     {
         //all balls are in the holes!
         SaveMoves(moves);
         return;
     }
 
+    std::list <Movement> to_north = MakeMove(moves, Direction::North);
+    std::list <Movement> to_west  = MakeMove(moves, Direction::West);
+    std::list <Movement> to_south = MakeMove(moves, Direction::South);
+    std::list <Movement> to_east  = MakeMove(moves, Direction::East);
 
+    if (!to_north.empty())
+    {
+        SimulateGame(to_north);
+    }
+    if (!to_west.empty())
+    {
+        SimulateGame(to_west);
+    }
+    if (!to_south.empty())
+    {
+        SimulateGame(to_south);
+    }
+    if (!to_east.empty())
+    {
+        SimulateGame(to_east);
+    }
 }
 
 bool GameTable::SaveMoves (const std::list <Movement> & moves)
@@ -443,5 +465,188 @@ bool GameTable::IsTooLotMoves (const std::list <Movement> & moves)
         return false;
     }
 
+    return true;
+}
+
+// game state must not be from the last step
+bool GameTable::HasLoop (const std::list <Movement> & moves,
+                         const std::map <coordinates_t, ball_id_t> & game_state)
+{
+    for (auto move : moves)
+    {
+        if (move.GetBallsPositions() == game_state)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::list <Movement>
+GameTable::MakeMove (const std::list <Movement> & moves, Direction to)
+{
+    auto current_position = moves.back().GetBallsPositions();
+    if (current_position.size() == 0)
+    {
+        //all balls are in the holes! no need to proceed making moves
+        SaveMoves(moves);
+        return std::list <Movement> ();
+    }
+
+    std::map <coordinates_t, ball_id_t> new_position;
+    std::map <coordinates_t, ball_id_t> new_position_removed_balls;
+    bool game_ok = RollAllBalls (to,
+                                 current_position,
+                                 moves.back().GetHoles(),
+                                 new_position,
+                                 new_position_removed_balls);
+    if (!game_ok)
+    {
+        return std::list <Movement> ();
+    }
+    if (HasLoop(moves, new_position))
+    {
+        // we got stack in loop! we will never win
+        return std::list <Movement> ();
+    }
+    Movement new_move (to, moves.back());
+    for (auto ball : new_position_removed_balls)
+    {
+        for (auto previous : current_position )
+        {
+            if (ball.second == previous.second)
+            {
+                new_move.SetBallPosition(ball.second, ball.first, previous.first);
+                break;
+            }
+        }
+    }
+    for (auto ball : new_position)
+    {
+        for (auto previous : current_position )
+        {
+            if (ball.second == previous.second)
+            {
+                new_move.SetBallPosition(ball.second, ball.first, previous.first);
+                break;
+            }
+        }
+    }
+
+    std::list <Movement> new_moves_list (moves);
+    new_moves_list.push_back(new_move);
+    return new_moves_list;
+}
+
+
+bool GameTable::RollAllBalls (Direction to,
+                              const std::map <coordinates_t, ball_id_t> & current_position,
+                              std::map <coordinates_t, ball_id_t> open_holes,
+                              std::map <coordinates_t, ball_id_t> & new_position,
+                              std::map <coordinates_t, ball_id_t> & new_position_removed)
+{
+    coordinate_t begin;
+    coordinate_t end;
+    bool x_before_y;
+
+    switch (to)
+    {
+    case Direction::North:
+        begin = 1;
+        end   = table_size_;
+        x_before_y = false;
+        break;
+    case Direction::West:
+        begin = 1;
+        end   = table_size_;
+        x_before_y = true;
+        break;
+    case Direction::South:
+        begin = table_size_;
+        end   = 1;
+        x_before_y = false;
+        break;
+    case Direction::East:
+        begin = table_size_;
+        end   = 1;
+        x_before_y = true;
+        break;
+    }
+
+    for (coordinate_t i=begin; i<=end; (begin < end) ? ++i : --i)
+    {
+        for (coordinate_t j=begin; j<=end; (begin < end) ? ++j : --j)
+        {
+            coordinates_t current_cell = (x_before_y) ? coordinates_t (i, j)
+                                                      : coordinates_t (j, i);
+
+            ball_id_t ball;
+            auto ball_iterator = current_position.find(current_cell);
+            if (ball_iterator == current_position.end())
+            {
+                //no ball here
+                continue;
+            }
+            else
+            {
+                ball = ball_iterator->second;
+            }
+
+            coordinates_t next_hop = move_graph_.at(current_cell).GetNeigbour(to);
+            auto gaps_on_road = move_graph_.at(current_cell).GetHolesOnWayTo(to);
+            bool reach_gap = false;
+
+            // ball can fall into the hole while movig
+            // if hole id and ball's one dont match game lost,
+            // otherwize ball in its hole and we are on our way to win
+            for (auto gap : gaps_on_road)
+            {
+                //is gap open?
+                auto hole = open_holes.find(gap);
+                if (hole != open_holes.end())
+                {
+                    if (hole->second == ball)
+                    {
+                        // A-ha ball in his hole!
+                        next_hop = hole->first;
+                        reach_gap = true;
+                        // block hole for next balls
+                        open_holes.erase(hole);
+                        break;
+                    }
+                    else
+                    {
+                        // Game over
+                        return false;
+                    }
+                }
+            }
+            //todo several balls in one cell!!!
+
+            // is cell empty?
+            if (!reach_gap)
+            {
+                // cell can be occupied
+                coordinates_t destination=next_hop;
+                while ( (new_position.find(destination) != new_position.end()) &&
+                        (destination != GetNeighbourCell(current_cell, ReverseDirection(to))) )
+                {
+                    destination = GetNeighbourCell(destination, ReverseDirection(to));
+                }
+                next_hop = destination;
+            }
+
+            // set new ball position
+            if (reach_gap)
+            {
+                new_position_removed.insert(std::make_pair(next_hop, ball));
+            }
+            else
+            {
+                new_position.insert(std::make_pair(next_hop, ball));
+
+            }
+        }
+    }
     return true;
 }

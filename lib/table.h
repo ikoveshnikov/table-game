@@ -82,9 +82,16 @@ protected:
 
     // all about movement
     void FindAllMoves ();
-    void SimulateGame (std::list <Movement> moves);
+    void SimulateGame (std::list<Movement> &moves);
     bool SaveMoves (const std::list <Movement> & moves);
     bool IsTooLotMoves (const std::list <Movement> & moves);
+    bool HasLoop (const std::list <Movement> & moves,
+                  const std::map <coordinates_t, ball_id_t> & game_state);
+    bool RollAllBalls (Direction to,
+                       const std::map <coordinates_t, ball_id_t> & current_position,
+                       std::map<coordinates_t, ball_id_t> open_holes,
+                       std::map<coordinates_t, ball_id_t> &new_position, std::map<coordinates_t, ball_id_t> &new_position_removed);
+    std::list <Movement> MakeMove (const std::list <Movement> & moves, Direction to);
 };
 
 std::ostream &
