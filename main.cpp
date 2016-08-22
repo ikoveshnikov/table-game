@@ -52,7 +52,8 @@ void Usage (std::string program_name)
            "\n"
            "OPTIONS:\n"
            "  -f, --file        File name containing input data\n"
-           "  -h, --help              Display this help and exit.\n"
+           "  -h, --help        Display this help and exit\n"
+           "  -d, --debug       Show debug output\n"
               << std::endl;
 }
 
@@ -62,18 +63,19 @@ int main(int argc, char *argv[])
     static struct option longopts[] =
     {
         {"file",    required_argument, NULL, 'f'},
-        {"help",       no_argument,       NULL, 'h'},
+        {"help",    no_argument,       NULL, 'h'},
+        {"debug",   no_argument,       NULL, 'd'},
         {NULL, 0, NULL, 0}
     };
 
     bool parse_error = false;
-
+    bool enable_debug = false;
     std::string filename;
 
     while (1)
     {
         int long_index = 0;
-        int opt = getopt_long(argc, argv, "f:h:", longopts, &long_index);
+        int opt = getopt_long(argc, argv, "f:h:d", longopts, &long_index);
 
         if (opt == -1)
             break;	/* No more options */
@@ -81,6 +83,10 @@ int main(int argc, char *argv[])
         switch (opt) {
         case 'f':
             filename = optarg;
+            break;
+
+        case 'd':
+            enable_debug = true;
             break;
 
         case 'h':
@@ -108,10 +114,13 @@ int main(int argc, char *argv[])
     }
 
     GameTable t(data);
-
-    std::cout << t;
     t.CalculateMoves();
-    std::cout << t;
+
+    if (enable_debug)
+    {
+        std::cout << t;
+    }
+
     t.PrintMoves(std::cout);
 
     return 0;
