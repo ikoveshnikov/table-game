@@ -34,6 +34,8 @@
 BoardCell::BoardCell(BoardCell::Walls w)
     : CellObject (CellObject::Type::BoardCell)
     , walls_(w)
+    , has_hole_(false)
+    , hole_id_(INVALID_ID)
 {
 }
 
