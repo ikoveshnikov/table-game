@@ -129,6 +129,11 @@ coordinate_t GameTable::GetTableSize() const
     return table_size_;
 }
 
+const std::map<coordinates_t, Ball> &GameTable::GetBalls() const
+{
+    return balls_;
+}
+
 void GameTable::CalculateMoves()
 {
     BuildMoveGraph();
@@ -254,6 +259,7 @@ operator << (std::ostream & os, const GameTable & gt)
 {
     auto board = gt.GetBoard();
     auto table_size = gt.GetTableSize();
+    auto balls = gt.GetBalls();
 
     for (coordinate_t j=1; j<=table_size; ++j)
     {
@@ -302,6 +308,8 @@ operator << (std::ostream & os, const GameTable & gt)
                 os << " ";
             if (board.at(coordinates_t(i,j)).HasHole())
                 os << "H " << std::setw(2) << board.at(coordinates_t(i,j)).HoleId();
+            else if (balls.find(coordinates_t(i,j)) != balls.end())
+                os << "B " << std::setw(2) << balls.find(coordinates_t(i,j))->second.GetId();
             else
                 os << "    ";
             if (board.at(coordinates_t(i,j)).HasWall(Direction::East))

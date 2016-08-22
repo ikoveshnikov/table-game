@@ -57,6 +57,8 @@ public:
 
     coordinate_t GetTableSize() const;
 
+    const std::map <coordinates_t, Ball> & GetBalls() const;
+
     void CalculateMoves ();
 
     std::map<const coordinates_t, GraphItem> GetMoveGraph() const;
