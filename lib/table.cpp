@@ -36,6 +36,8 @@
 
 #include "tg_utils.h"
 
+#include <unistd.h>
+
 
 GameTable::GameTable(const InputData &in)
 {
@@ -396,46 +398,52 @@ void GameTable::FindAllMoves()
 
     Movement start_point (balls, holes);
     std::list <Movement> moves = {start_point};
-    SimulateGame(moves);
+    std::list <std::list <Movement> >all_moves  = {moves};
+
+    SimulateGame(all_moves);
 }
 
 
-void GameTable::SimulateGame (std::list <Movement> & moves)
+void GameTable::SimulateGame (std::list <std::list <Movement> > & moves)
 {
-    if (IsTooLotMoves(moves))
+    while (!moves.empty())
     {
-        // too lot of moves, better plays are saved
-        return;
-    }
+        std::list <Movement> & current_moves = moves.front();
 
-    auto current_position = moves.back().GetBallsPositions();
-    if (current_position.size() == 0)
-    {
-        //all balls are in the holes!
-        SaveMoves(moves);
-        return;
-    }
+        if (!IsTooLotMoves(current_moves))
+        {
+            auto current_position = current_moves.back().GetBallsPositions();
+            if (current_position.size() == 0)
+            {
+                //all balls are in the holes!
+                SaveMoves(current_moves);
+            }
+            else
+            {
+                std::list <Movement> to_north = MakeMove(current_moves, Direction::North);
+                std::list <Movement> to_west  = MakeMove(current_moves, Direction::West);
+                std::list <Movement> to_south = MakeMove(current_moves, Direction::South);
+                std::list <Movement> to_east  = MakeMove(current_moves, Direction::East);
 
-    std::list <Movement> to_north = MakeMove(moves, Direction::North);
-    std::list <Movement> to_west  = MakeMove(moves, Direction::West);
-    std::list <Movement> to_south = MakeMove(moves, Direction::South);
-    std::list <Movement> to_east  = MakeMove(moves, Direction::East);
-
-    if (!to_north.empty())
-    {
-        SimulateGame(to_north);
-    }
-    if (!to_west.empty())
-    {
-        SimulateGame(to_west);
-    }
-    if (!to_south.empty())
-    {
-        SimulateGame(to_south);
-    }
-    if (!to_east.empty())
-    {
-        SimulateGame(to_east);
+                if (!to_north.empty())
+                {
+                    moves.push_back(to_north);
+                }
+                if (!to_west.empty())
+                {
+                    moves.push_back(to_west);
+                }
+                if (!to_south.empty())
+                {
+                    moves.push_back(to_south);
+                }
+                if (!to_east.empty())
+                {
+                    moves.push_back(to_east);
+                }
+            }
+        }
+        moves.pop_front();
     }
 }
 
@@ -562,9 +570,9 @@ bool GameTable::RollAllBalls (Direction to,
         break;
     }
 
-    for (coordinate_t i=begin; i<=end; (begin < end) ? ++i : --i)
+    for (coordinate_t i=begin; IsValid(i, table_size_); (begin < end) ? ++i : --i)
     {
-        for (coordinate_t j=begin; j<=end; (begin < end) ? ++j : --j)
+        for (coordinate_t j=begin; IsValid(j, table_size_); (begin < end) ? ++j : --j)
         {
             coordinates_t current_cell = (x_before_y) ? coordinates_t (i, j)
                                                       : coordinates_t (j, i);

@@ -82,7 +82,7 @@ protected:
 
     // all about movement
     void FindAllMoves ();
-    void SimulateGame (std::list<Movement> &moves);
+    void SimulateGame (std::list <std::list<Movement> > &moves);
     bool SaveMoves (const std::list <Movement> & moves);
     bool IsTooLotMoves (const std::list <Movement> & moves);
     bool RollAllBalls (Direction to,

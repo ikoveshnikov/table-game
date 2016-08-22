@@ -84,10 +84,10 @@ bool Movement::SetBallPosition(ball_id_t ball,
         auto hole = holes_state_.find(current_cell);
         if (hole != holes_state_.end())
         {
-            if (hole->second != ball)
+            if (hole->second == ball)
             {
-                //wrong hole! illegal move
-                return false;
+                holes_state_.erase(hole);
+                return true;
             }
         }
         else
