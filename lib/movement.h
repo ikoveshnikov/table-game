@@ -60,6 +60,17 @@ public:
     const std::map <coordinates_t, ball_id_t> & GetBallsPositions () const;
     const std::map <coordinates_t, ball_id_t> & GetHoles () const;
 
+    struct LoopGuard
+    {
+        size_t visited_cells_count_;
+        std::map <coordinates_t, bool> visited_cells_;
+    };
+
+    const std::map <ball_id_t, LoopGuard>  GetLoopGuard () const;
+    void InitLoopGuard ();
+    bool IsLooped () const;
+
+
 private:
     Direction move_;
     bool start_move_;
@@ -69,7 +80,9 @@ private:
     //track which holes are still open
     std::map <coordinates_t, ball_id_t> holes_state_;
 
-    void RemoveReqiredBall (const coordinates_t & at);
+    // loop guard
+    std::map <ball_id_t, LoopGuard> loop_guard_;
+
 };
 
 #endif // TG_PATH_H

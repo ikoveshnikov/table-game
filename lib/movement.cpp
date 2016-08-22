@@ -37,6 +37,7 @@ Movement::Movement(Direction to, const Movement &previous_move)
     , start_move_(false)
     , occupied_cells_ (previous_move.GetBallsPositions())
     , holes_state_ (previous_move.GetHoles())
+    , loop_guard_(previous_move.GetLoopGuard())
 {
 
 }
@@ -47,6 +48,13 @@ Movement::Movement(const std::map<coordinates_t, ball_id_t> &balls,
     , occupied_cells_ (balls)
     , holes_state_ (holes)
 {
+    for (auto ball : balls)
+    {
+        LoopGuard lg;
+        lg.visited_cells_[ball.first] = true;
+
+        loop_guard_.insert(std::make_pair(ball.second, lg));
+    }
 }
 
 bool Movement::IsStartMove() const
@@ -86,6 +94,7 @@ bool Movement::SetBallPosition(ball_id_t ball,
         {
             // just place ball on the cell
             occupied_cells_.insert(std::make_pair(current_cell, ball));
+            loop_guard_.at(ball).visited_cells_[current_cell] = true;
             return true;
         }
     }
@@ -117,4 +126,29 @@ const std::map<coordinates_t, ball_id_t> &Movement::GetBallsPositions() const
 const std::map<coordinates_t, ball_id_t> &Movement::GetHoles() const
 {
     return holes_state_;
+}
+
+const std::map<ball_id_t, Movement::LoopGuard> Movement::GetLoopGuard() const
+{
+    return loop_guard_;
+}
+
+void Movement::InitLoopGuard()
+{
+    for (auto lg : loop_guard_)
+    {
+        lg.second.visited_cells_count_ = lg.second.visited_cells_.size();
+    }
+}
+
+bool Movement::IsLooped() const
+{
+    for (auto lg : loop_guard_)
+    {
+        if (lg.second.visited_cells_count_ != lg.second.visited_cells_.size())
+        {
+            return false;
+        }
+    }
+    return true;
 }

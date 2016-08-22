@@ -468,22 +468,8 @@ bool GameTable::IsTooLotMoves (const std::list <Movement> & moves)
     return true;
 }
 
-// game state must not be from the last step
-bool GameTable::HasLoop (const std::list <Movement> & moves,
-                         const std::map <coordinates_t, ball_id_t> & game_state)
-{
-    for (auto move : moves)
-    {
-        if (move.GetBallsPositions() == game_state)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 std::list <Movement>
-GameTable::MakeMove (const std::list <Movement> & moves, Direction to)
+GameTable::MakeMove (std::list <Movement> & moves, Direction to)
 {
     auto current_position = moves.back().GetBallsPositions();
     if (current_position.size() == 0)
@@ -504,11 +490,9 @@ GameTable::MakeMove (const std::list <Movement> & moves, Direction to)
     {
         return std::list <Movement> ();
     }
-    if (HasLoop(moves, new_position))
-    {
-        // we got stack in loop! we will never win
-        return std::list <Movement> ();
-    }
+
+    moves.back().InitLoopGuard();
+
     Movement new_move (to, moves.back());
     for (auto ball : new_position_removed_balls)
     {
@@ -531,6 +515,11 @@ GameTable::MakeMove (const std::list <Movement> & moves, Direction to)
                 break;
             }
         }
+    }
+
+    if (new_move.IsLooped())
+    {
+        return std::list <Movement> ();
     }
 
     std::list <Movement> new_moves_list (moves);
