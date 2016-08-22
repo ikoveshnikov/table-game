@@ -81,25 +81,10 @@ protected:
     void FillGraphItemInDirection (GraphItem & gi, coordinates_t current_cell, Direction move_to) const;
 
     // all about movement
-    // ensure movement suits the next ball. it can has more than one variants
-    std::list <std::list <Movement> > FindAllMoves (Ball & ball);
-    std::list <std::list <Movement> >
-    AddMoves (std::list<Movement> &moves,
-                         Ball & ball);
-    //return true, empty list if reached target
-    // return false, if no moves available
-    // return true, list of moves if ok
-    bool AddNextMove (Movement & last_move, std::list<Movement> &next_move,
-                      const coordinates_t & current_cell,
-                      Direction to,
-                      Ball & ball);
-    bool FindBestMoves ();
-    void CheckMoves (ball_id_t reference);
-    bool SimulateMoves (std::list<Movement> &movements,
-                        ball_id_t reference);
-    bool RollAllBalls (std::map <coordinates_t, Ball> & balls_state,
-                       const Movement & move,
-                       ball_id_t reference);
+    void FindAllMoves ();
+    void SimulateGame (std::list <Movement> moves);
+    bool SaveMoves (const std::list <Movement> & moves);
+    bool IsTooLotMoves (const std::list <Movement> & moves);
 };
 
 std::ostream &

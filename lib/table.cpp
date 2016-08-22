@@ -130,7 +130,6 @@ coordinate_t GameTable::GetTableSize() const
 void GameTable::CalculateMoves()
 {
     BuildMoveGraph();
-    FindBestMoves();
 }
 
 std::map<const coordinates_t, GraphItem> GameTable::GetMoveGraph() const
@@ -379,266 +378,70 @@ operator << (std::ostream & os, const GameTable & gt)
     return os;
 }
 
-bool GameTable::FindBestMoves()
+void GameTable::FindAllMoves()
 {
-    auto ball = balls_.begin();
-    if (ball == balls_.end())
-    {
-        return false;
-    }
-
-    moves_ = FindAllMoves(ball->second);
-    CheckMoves(ball->second.GetId());
-
-    return (!moves_.empty());
-}
-
-std::list <std::list <Movement> >
-GameTable::FindAllMoves (Ball & ball)
-{
-    //init start move
-
-    std::map <coordinates_t, ball_id_t>  balls;
+    //create a start item and start playing around
+    std::map <coordinates_t, ball_id_t> balls;
     std::map <coordinates_t, ball_id_t> holes;
-    std::map <coordinates_t, bool>  visited_table;
-    for (auto i : balls_)
-    {
-        if (i.second.GetId() == ball.GetId())
-        {
-            balls.insert(std::make_pair(i.first, i.second.GetId()));
-            visited_table[i.first] = true;
-        }
-    }
-    for (auto i : holes_)
-    {
-        holes[i.second] = i.first;
-    }
-    Movement start_move (balls, holes, visited_table);
 
-    std::list <Movement> first_move = {start_move};
-    std::list <std::list <Movement> > movement_list = {first_move};
-    std::list <std::list <Movement> > final_moves;
+    for (auto ball : balls_)
+    {
+        balls.insert(std::make_pair(ball.first, ball.second.GetId()));
+    }
+    for (auto hole : holes_)
+    {
+        holes.insert(std::make_pair(hole.second, hole.first));
+    }
 
-    bool repeat = false;
-    do {
-        repeat = false;
-        std::list <std::list <Movement> > temporal_list = movement_list;
-        movement_list.clear();
-        for (auto i : temporal_list)
-        {
-            std::list <std::list <Movement> >  new_moves = AddMoves(i, ball);
-            for (auto j : new_moves)
-            {
-                if (j.back().GetBallPosition(ball.GetId()) == coordinates_t(0,0))
-                {
-                    final_moves.push_back(j);
-                }
-                else
-                {
-                    movement_list.push_back(j);
-                    repeat = true;
-                }
-            }
-        }
-    } while (repeat);
-    return final_moves;
+    Movement start_point (balls, holes);
+    std::list <Movement> moves = {start_point};
 }
 
-std::list <std::list <Movement> >
-GameTable::AddMoves (std::list <Movement> & moves,
-                     Ball & ball)
+
+void GameTable::SimulateGame (std::list <Movement> moves)
 {
-    assert((moves.size() != 0));
-    Movement & last_move = moves.back();
-    const coordinates_t current_cell = last_move.GetBallPosition(ball.GetId());
-    if ((current_cell == holes_[ball.GetId()]) ||
-        (current_cell == coordinates_t(0,0)))
+    if (IsTooLotMoves(moves))
     {
-        std::list <std::list <Movement> > move_list = {moves};
-        return move_list;
+        // too lot of moves, better plays are saved
+        return;
     }
 
-    std::list <std::list <Movement> > move_list;
-    std::list <Movement> north_moves, west_moves, south_moves, east_moves;
-
-    AddNextMove(last_move, north_moves, current_cell, Direction::North, ball);
-    AddNextMove(last_move, west_moves,  current_cell, Direction::West,  ball);
-    AddNextMove(last_move, south_moves, current_cell, Direction::South, ball);
-    AddNextMove(last_move, east_moves,  current_cell, Direction::East,  ball);
-
-    for (auto i : north_moves)
+    auto balls = moves.back().GetBallsPositions();
+    if (balls.size() == 0)
     {
-        std::list <Movement> current_moves = moves;
-        current_moves.push_back(i);
-        move_list.push_back(current_moves);
-    }
-
-    for (auto i : west_moves)
-    {
-        std::list <Movement> current_moves = moves;
-        current_moves.push_back(i);
-        move_list.push_back(current_moves);
-    }
-
-    for (auto i : south_moves)
-    {
-        std::list <Movement> current_moves = moves;
-        current_moves.push_back(i);
-        move_list.push_back(current_moves);
-    }
-
-    for (auto i : east_moves)
-    {
-        std::list <Movement> current_moves = moves;
-        current_moves.push_back(i);
-        move_list.push_back(current_moves);
+        //all balls are in the holes!
+        SaveMoves(moves);
+        return;
     }
 
 
-    return move_list;
 }
 
-bool GameTable::AddNextMove (Movement & last_move, std::list <Movement > & next_move,
-                             const coordinates_t & current_cell,
-                             Direction to,
-                             Ball & ball)
+bool GameTable::SaveMoves (const std::list <Movement> & moves)
 {
-    if (current_cell == holes_[ball.GetId()])
+    if ((moves_.size() == 0) ||
+        (moves_.back().size() == moves.size() ))
     {
-        //nothing to do. reached the target
+        moves_.push_back(moves);
         return true;
     }
-
-    coordinates_t next_hop = move_graph_.at(current_cell).GetNeigbour(to);
-    if ( next_hop == current_cell)
+    else if (moves_.back().size() > moves.size())
     {
-        last_move.AddLoop(to);
-        // no moves possible
+        moves_.clear();
+        moves_.push_back(moves);
+        return true;
+    }
+    //cannot add: better moves are saved
+    return false;
+}
+
+bool GameTable::IsTooLotMoves (const std::list <Movement> & moves)
+{
+    if ((moves_.size() == 0) ||
+        (moves_.back().size() >= moves.size() ))
+    {
         return false;
     }
 
-    // check if we can reach destination in one step
-    coordinates_t target_hole = holes_[ball.GetId()];
-    coordinates_t max_hop = next_hop;
-    std::vector <coordinates_t> reacheble_holes
-            = move_graph_.at(current_cell).GetHolesOnWayTo(to);
-    for (auto i :reacheble_holes)
-    {
-        if (i == target_hole)
-        {
-            max_hop = target_hole;
-        }
-    }
-
-    // next hop is farest step we can make, so need to add several hopps
-    // regarding some conditions
-
-    auto nearest_hop = current_cell;
-    do {
-        nearest_hop = GetNeighbourCell(nearest_hop, to);
-        Movement new_move (to, last_move);
-        if (!new_move.SetBallPosition(ball.GetId(), nearest_hop, current_cell))
-        {
-            //movement can not to be done
-            continue;
-        }
-
-        // ball will not stop by it's own
-        if (nearest_hop != max_hop)
-        {
-            auto required_ball = GetNeighbourCell(nearest_hop, to);
-            // required ball cannot stand on our hole!
-            if (required_ball == target_hole)
-            {
-                continue;
-            }
-            new_move.ReqireBallAt(required_ball);
-        }
-        // all holes need to be closed
-        for (auto i : reacheble_holes)
-        {
-            if (i <= nearest_hop)
-            {
-                new_move.ReqireClosedHole(i);
-            }
-        }
-
-        // now we have possible move derection with its own conditions
-        next_move.push_back(new_move);
-
-
-        if (nearest_hop == holes_[ball.GetId()])
-        {
-            //no need to go further
-            break;
-        }
-    } while (nearest_hop != max_hop);
-    return (!next_move.empty());
-}
-
-void GameTable::CheckMoves(ball_id_t reference)
-{
-    // we have already calculated all possible moves for one ball: reference
-    // solution is somewhere there
-    std::list <std::list <Movement> > best_moves;
-
-    for (auto i : moves_)
-    {
-        if ((best_moves.size() == 0) ||
-            (best_moves.front().size() == i.size() ))
-        {
-            if (SimulateMoves(i, reference))
-            {
-                best_moves.push_back(i);
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    moves_.clear();
-    moves_ = best_moves;
-}
-
-bool GameTable::SimulateMoves (const std::list <Movement> & movements,
-                               ball_id_t reference)
-{
-    std::map <coordinates_t, Ball> & balls_state = balls_;
-
-    for (auto i : movements)
-    {
-        if (i.IsStartMove())
-        {
-            continue;
-        }
-        if (!RollAllBalls(balls_state, i, reference))
-        {
-            // cannot move board as wanted
-            return false;
-        }
-    }
-    return balls_state.empty();
-}
-
-bool GameTable::RollAllBalls (std::map <coordinates_t, Ball> & balls_state,
-                   const Movement & move,
-                   ball_id_t reference)
-{
-    switch (move.GetMove())
-    {
-    case Direction::North:
-
-        break;
-    case Direction::West:
-
-        break;
-    case Direction::South:
-
-        break;
-    case Direction::East:
-
-        break;
-    }
+    return true;
 }

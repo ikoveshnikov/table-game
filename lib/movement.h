@@ -42,19 +42,9 @@ class Movement
 public:
     Movement(Direction to, const Movement & previous_move);
     Movement(const std::map <coordinates_t, ball_id_t> & balls,
-             const std::map <coordinates_t, ball_id_t> & holes,
-             std::map <coordinates_t, bool>  visited_table);
+             const std::map <coordinates_t, ball_id_t> & holes);
     ~Movement() = default;
 
-    void AddLoop (Direction to);
-
-    bool HasLoops (Direction side) const;
-
-    void ReqireBallAt (const coordinates_t & cell);
-    void ReqireClosedHole (const coordinates_t & cell);
-
-    // is it good move? All reqirements must be met
-    bool IsGood () const;
     // if move is start one almost all values will be invalid
     bool IsStartMove () const;
 
@@ -70,31 +60,14 @@ public:
     const std::map <coordinates_t, ball_id_t> & GetBallsPositions () const;
     const std::map <coordinates_t, ball_id_t> & GetHoles () const;
 
-    void ClearVisitedTable ();
-    std::map <coordinates_t, bool>  GetVisitedTable () const;
-
 private:
     Direction move_;
     bool start_move_;
-
-    // one-step loops. exist only if moovement to that direction wont
-    // change positions of all the known balls
-    bool loop_while_move_north_;
-    bool loop_while_move_west_;
-    bool loop_while_move_south_;
-    bool loop_while_move_east_;
-
-    // Movement posibility conditions:
-    std::vector <coordinates_t> ball_on_way_;
-    std::vector <coordinates_t> holes_closed_;
 
     //track where balls are
     std::map <coordinates_t, ball_id_t> occupied_cells_;
     //track which holes are still open
     std::map <coordinates_t, ball_id_t> holes_state_;
-
-    // can be used only for one ball a time
-    std::map <coordinates_t, bool> visited_;
 
     void RemoveReqiredBall (const coordinates_t & at);
 };

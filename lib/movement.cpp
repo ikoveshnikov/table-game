@@ -35,127 +35,18 @@
 Movement::Movement(Direction to, const Movement &previous_move)
     : move_(to)
     , start_move_(false)
-    , loop_while_move_north_(false)
-    , loop_while_move_west_ (false)
-    , loop_while_move_south_(false)
-    , loop_while_move_east_ (false)
     , occupied_cells_ (previous_move.GetBallsPositions())
     , holes_state_ (previous_move.GetHoles())
-    , visited_ (previous_move.GetVisitedTable())
 {
 
 }
 
 Movement::Movement(const std::map<coordinates_t, ball_id_t> &balls,
-                   const std::map<coordinates_t, ball_id_t> &holes,
-                   std::map<coordinates_t, bool> visited_table)
+                   const std::map<coordinates_t, ball_id_t> &holes)
     : start_move_ (true)
-    , loop_while_move_north_(false)
-    , loop_while_move_west_ (false)
-    , loop_while_move_south_(false)
-    , loop_while_move_east_ (false)
     , occupied_cells_ (balls)
     , holes_state_ (holes)
-    , visited_(visited_table)
 {
-
-}
-
-void Movement::AddLoop(Direction to)
-{
-    switch (to)
-    {
-    case Direction::North:
-        loop_while_move_north_ = true;
-        break;
-    case Direction::West:
-        loop_while_move_west_ = true;
-        break;
-    case Direction::South:
-        loop_while_move_south_ = true;
-        break;
-    case Direction::East:
-        loop_while_move_east_ = true;
-        break;
-    }
-}
-
-bool Movement::HasLoops(Direction side) const
-{
-    switch (side)
-    {
-    case Direction::North:
-        return loop_while_move_north_;
-    case Direction::West:
-        return loop_while_move_west_;
-    case Direction::South:
-        return loop_while_move_south_;
-    case Direction::East:
-        return loop_while_move_east_;
-    }
-
-    return false;
-}
-
-void Movement::ReqireBallAt(const coordinates_t &cell)
-{
-    auto search = occupied_cells_.find(cell);
-
-    if (search == occupied_cells_.end())
-    {
-        // nod found. add to reqired balls
-        bool found = false;
-        for (auto i : ball_on_way_)
-        {
-            if (i == cell)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            ball_on_way_.push_back(cell);
-        }
-    }
-    else
-    {
-        // found - means everything is good, nothing to do
-    }
-}
-
-void Movement::ReqireClosedHole(const coordinates_t &cell)
-{
-    auto search = holes_state_.find(cell);
-
-    if (search == holes_state_.end())
-    {
-        //nothing to do hole is already closed
-    }
-    else
-    {
-        // nod found add to reqired balls
-        bool found = false;
-        for (auto i : holes_closed_)
-        {
-            if (i == cell)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            holes_closed_.push_back(cell);
-        }
-    }
-}
-
-bool Movement::IsGood() const
-{
-    return (ball_on_way_.empty() && holes_closed_.empty());
 }
 
 bool Movement::IsStartMove() const
@@ -190,29 +81,15 @@ bool Movement::SetBallPosition(ball_id_t ball,
                 //wrong hole! illegal move
                 return false;
             }
-            else
-            {
-                // dont insert ball into ocupied cells: it closed hole
-                // remove ball from reqired list
-                RemoveReqiredBall(current_cell);
-                return true;
-            }
         }
         else
         {
-            // safely place ball
-            auto visited = visited_.find(current_cell);
-            if (visited != visited_.end() && visited->second)
-            {
-                //we have already visited this cell
-                return false;
-            }
+            // just place ball on the cell
             occupied_cells_.insert(std::make_pair(current_cell, ball));
-            RemoveReqiredBall(current_cell);
-            visited_[current_cell] = true;
             return true;
         }
     }
+    return false;
 }
 
 const coordinates_t Movement::GetBallPosition(ball_id_t ball)
@@ -240,26 +117,4 @@ const std::map<coordinates_t, ball_id_t> &Movement::GetBallsPositions() const
 const std::map<coordinates_t, ball_id_t> &Movement::GetHoles() const
 {
     return holes_state_;
-}
-
-void Movement::ClearVisitedTable()
-{
-    visited_.clear();
-}
-
-std::map<coordinates_t, bool> Movement::GetVisitedTable() const
-{
-    return visited_;
-}
-
-void Movement::RemoveReqiredBall(const coordinates_t &at)
-{
-    for (auto i = ball_on_way_.begin(); i!= ball_on_way_.end(); ++i)
-    {
-        if (*i == at)
-        {
-            ball_on_way_.erase(i);
-            return;
-        }
-    }
 }
