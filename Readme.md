@@ -21,4 +21,14 @@ If you have Doxygen available, API documentation will be compilled in your build
 No additional actions needed.
 
 If you would like to compile unit tests as well use this CMake options:
-    -DTESTS=yes
+    cmake . -DTESTS=yes
+    make
+    make test
+
+Run
+---
+
+Run application calling:
+    ./table_game -f %file_name%
+
+option '-d' can be used to run in debug mode
